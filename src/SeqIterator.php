@@ -19,7 +19,7 @@ class SeqIterator implements \Iterator
      * SeqIterator constructor.
      * @param $s
      */
-    public function __construct(&$s)
+    public function __construct($s)
     {
         $this->s = $s;
         $this->so = $s;
@@ -43,7 +43,7 @@ class SeqIterator implements \Iterator
 
     public function valid()
     {
-        return isset($this->s);
+        return Core::seq($this->s) != null;
     }
 
     public function rewind()

@@ -8,7 +8,7 @@
 
 namespace phojure;
 
-class Cons implements Seq, Seqable, \IteratorAggregate
+class Cons extends ASeq
 {
     private $head;
     private $tail;
@@ -24,10 +24,9 @@ class Cons implements Seq, Seqable, \IteratorAggregate
         $this->tail = $tail;
     }
 
-
-    public function getIterator()
+    function nothing()
     {
-        return new SeqIterator($this);
+        return EmptyList::get();
     }
 
     function first()
@@ -35,13 +34,8 @@ class Cons implements Seq, Seqable, \IteratorAggregate
         return $this->head;
     }
 
-    function rest()
+    function next()
     {
         return $this->tail;
-    }
-
-    function seq()
-    {
-        return $this;
     }
 }

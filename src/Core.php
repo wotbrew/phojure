@@ -11,12 +11,16 @@ namespace phojure;
 class Core
 {
     public static function cons($x, $coll){
-        return new Cons($x, self::seq($coll));
+        $coll = self::seq($coll);
+        if($coll != null)
+            return $coll->cons($x);
+
+        return new Cons($x, $coll);
     }
 
     public static function seq($coll){
-        if (!$coll) return null;
-
+        if ($coll === null) return null;
+        if ($coll == EmptyList::get()) return null;
         if ($coll instanceof Seq){
             return $coll;
         }
@@ -30,18 +34,13 @@ class Core
             return null;
         }
         else if ($coll instanceof \Iterator){
-            return new LazySeq(function() use ($coll) {
-                $head = $coll->current();
-                $coll->next();
-                $tail = $coll->valid() ? self::seq($coll) : null;
-                return new Cons($head, $tail);
-            });
+            return new IteratorSeq($coll);
         }
         else if ($coll instanceof \IteratorAggregate){
             return self::seq($coll->getIterator());
         }
 
-        throw new \Exception();
+        throw new \Exception("Cannot find seq");
     }
 
     public static function first($coll){
@@ -60,6 +59,19 @@ class Core
         return null;
     }
 
+    public static function last($coll){
+        $a = $coll;
+        while(true){
+            $x = self::seq(self::rest($a));
+            if($x == null){
+                return self::first($a);
+            }
+            $a = $x;
+        }
+        return null;
+    }
+
+
     public static function seqIterator($coll){
         return new SeqIterator(self::seq($coll));
     }
@@ -75,8 +87,9 @@ class Core
 
     public static function take($n, $coll){
         if(!$coll) return null;
+        if($n <= 0) return null;
+
         return new LazySeq(function() use ($n, $coll){
-            if($n <= 0) return null;
             return self::cons(
                 self::first($coll),
                 self::take($n - 1, self::rest($coll))
@@ -86,8 +99,8 @@ class Core
 
     public static function drop($n, $coll){
         if(!$coll) return null;
+        if($n <= 0) return $coll;
         return new LazySeq(function() use ($n, $coll){
-            if($n <= 0) return $coll;
             return self::drop($n - 1, $coll);
         });
     }

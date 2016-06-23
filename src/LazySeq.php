@@ -8,7 +8,7 @@
 
 namespace phojure;
 
-class LazySeq implements Seq, Seqable, \IteratorAggregate
+class LazySeq extends ASeq
 {
     private $f;
     private $sval;
@@ -24,6 +24,8 @@ class LazySeq implements Seq, Seqable, \IteratorAggregate
     }
 
     function sval(){
+
+        return call_user_func($this->f);
         if($this->f != null){
             $this->sval = call_user_func($this->f);
             $this->f = null;
@@ -35,6 +37,12 @@ class LazySeq implements Seq, Seqable, \IteratorAggregate
     }
 
     function seq(){
+        $r = $this->sval();
+        while($r instanceof LazySeq){
+            $r = $r->sval();
+        }
+        return $r;
+
         $this->sval();
         if($this->sval != null){
             $ls = $this->sval;
@@ -50,6 +58,7 @@ class LazySeq implements Seq, Seqable, \IteratorAggregate
 
     function first()
     {
+        return Core::first($this->seq());
         $this->seq();
         if ($this->s == null){
             return null;
@@ -57,13 +66,22 @@ class LazySeq implements Seq, Seqable, \IteratorAggregate
         return $this->s->first();
     }
 
-    function rest()
+    function next()
     {
+        $x = $this->seq();
+        if($x != null) return $x->next();
+        return null;
+
         $this->seq();
         if ($this->s == null){
             return null;
         }
-        return $this->s->rest();
+        return $this->s->next();
+    }
+
+    function nothing()
+    {
+        return EmptyList::get();
     }
 
     function getIterator()
