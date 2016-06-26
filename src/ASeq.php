@@ -8,9 +8,6 @@
 
 namespace phojure;
 
-
-use Traversable;
-
 abstract class ASeq implements Seq, Seqable, PersistentCollection, \IteratorAggregate
 {
     public function getIterator()
@@ -32,6 +29,6 @@ abstract class ASeq implements Seq, Seqable, PersistentCollection, \IteratorAggr
 
     function cons($x)
     {
-        return new Cons($x, $this);
+        return new PersistentList($x, $this);
     }
 }

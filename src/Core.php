@@ -15,34 +15,43 @@ class Core
         if($coll != null)
             return $coll->cons($x);
 
-        return new Cons($x, $coll);
+        return new PersistentList($x, $coll);
     }
 
-    public static function seq($coll){
-        if ($coll === null) return null;
-        if ($coll == EmptyList::get()) return null;
-        if ($coll instanceof Seq){
-            return $coll;
-        }
-        else if ($coll instanceof Seqable){
+    public static function plist()
+    {
+        $args = func_get_args();
+        return PersistentList::ofArray($args);
+    }
+
+    private static function seqFrom($coll){
+        if($coll instanceof Seqable)
             return $coll->seq();
-        }
-        if(is_array($coll)){
+        else if ($coll === null)
+            return null;
+        else if ($coll instanceof \Iterator)
+            return new IteratorSeq($coll);
+        else if ($coll instanceof \IteratorAggregate)
+            return new IteratorSeq($coll->getIterator());
+        else if (is_array($coll)){
             if(count($coll) > 0){
                 return self::seq(new \ArrayIterator($coll));
             }
             return null;
         }
-        else if ($coll instanceof \Iterator){
-            return new IteratorSeq($coll);
-        }
-        else if ($coll instanceof \IteratorAggregate){
-            return self::seq($coll->getIterator());
-        }
 
         throw new \Exception("Cannot find seq");
     }
 
+    public static function seq($coll){
+        if($coll instanceof ASeq) return $coll;
+        else if ($coll instanceof LazySeq)
+            return $coll->seq();
+
+        return self::seqFrom($coll);
+    }
+
+    static $first = 'phojure\\Core::first';
     public static function first($coll){
         $s = self::seq($coll);
         if ($s){
@@ -59,6 +68,7 @@ class Core
         return null;
     }
 
+    static $last = 'phojure\\Core::last';
     public static function last($coll){
         $a = $coll;
         while(true){
@@ -76,6 +86,7 @@ class Core
         return new SeqIterator(self::seq($coll));
     }
 
+    static $map = 'phojure\\Core::map';
     public static function map($f, $coll){
         if(!$coll) return null;
         return new LazySeq(function() use ($f, $coll) {
@@ -112,5 +123,12 @@ class Core
                self::repeat($x)
            );
         });
+    }
+
+    public static function threadf($x){
+        return new ThreadFirst($x);
+    }
+    public static function threadl($x){
+        return new ThreadLast($x);
     }
 }

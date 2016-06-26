@@ -11,8 +11,6 @@ namespace phojure;
 class LazySeq extends ASeq
 {
     private $f;
-    private $sval;
-    private $s;
 
     /**
      * LazySeq constructor.
@@ -24,16 +22,7 @@ class LazySeq extends ASeq
     }
 
     function sval(){
-
         return call_user_func($this->f);
-        if($this->f != null){
-            $this->sval = call_user_func($this->f);
-            $this->f = null;
-        }
-        if ($this->sval != null){
-            return $this->sval;
-        }
-        return $this->s;
     }
 
     function seq(){
@@ -42,28 +31,11 @@ class LazySeq extends ASeq
             $r = $r->sval();
         }
         return $r;
-
-        $this->sval();
-        if($this->sval != null){
-            $ls = $this->sval;
-            $this->sval = null;
-            while ($ls instanceof LazySeq){
-                $ls = $ls->sval();
-            }
-            $this->s = Core::seq($ls);
-            return $this->s;
-        }
-        return null;
     }
 
     function first()
     {
         return Core::first($this->seq());
-        $this->seq();
-        if ($this->s == null){
-            return null;
-        }
-        return $this->s->first();
     }
 
     function next()
@@ -71,12 +43,6 @@ class LazySeq extends ASeq
         $x = $this->seq();
         if($x != null) return $x->next();
         return null;
-
-        $this->seq();
-        if ($this->s == null){
-            return null;
-        }
-        return $this->s->next();
     }
 
     function nothing()
