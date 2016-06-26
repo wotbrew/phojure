@@ -3,7 +3,7 @@
 namespace phojure;
 
 
-interface PersistentCollection extends Seqable
+interface IPersistentCollection extends Seqable
 {
     function nothing();
 }

@@ -2,7 +2,7 @@
 
 namespace phojure;
 
-abstract class ASeq implements Seq, Seqable, PersistentCollection, \IteratorAggregate, \Countable
+abstract class ASeq implements ISeq, Seqable, IPersistentCollection, \IteratorAggregate, \Countable
 {
     public function getIterator()
     {

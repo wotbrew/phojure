@@ -8,7 +8,7 @@ class Core
     static function cons($x, $coll){
         if($coll == null)
             return new PersistentList($x, null);
-        else if ($coll instanceof Seq){
+        else if ($coll instanceof ISeq){
             return new Cons($x, $coll);
         }
         else {
@@ -108,7 +108,7 @@ class Core
 
     static $is_seq = 'phojure\\Core::is_seq';
     static function is_seq($coll){
-        return $coll instanceof Seq;
+        return $coll instanceof ISeq;
     }
 
     

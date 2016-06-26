@@ -2,7 +2,7 @@
 
 namespace phojure;
 
-class EmptyList implements Seqable, Seq, PersistentCollection, \Iterator, \Countable {
+class EmptyList implements Seqable, ISeq, IPersistentCollection, \Iterator, \Countable {
     public static function get(){
         static $x;
         if(!$x) {

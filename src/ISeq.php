@@ -3,7 +3,7 @@
 namespace phojure;
 
 
-interface Seq
+interface ISeq
 {
     function first();
     function next();
