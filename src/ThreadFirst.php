@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: danielstone
- * Date: 23/06/2016
- * Time: 15:16
- */
 
 namespace phojure;
 
