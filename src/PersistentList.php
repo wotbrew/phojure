@@ -2,7 +2,7 @@
 
 namespace phojure;
 
-class EmptyList implements Seqable, ISeq, IPersistentCollection, \Iterator, \Countable {
+class EmptyList implements Seqable, ISeq, IPersistentCollection, \Iterator, \Countable, IPersistentStack {
     public static function get(){
         static $x;
         if(!$x) {
@@ -63,9 +63,19 @@ class EmptyList implements Seqable, ISeq, IPersistentCollection, \Iterator, \Cou
     {
         return 0;
     }
+
+    function peek()
+    {
+        return null;
+    }
+
+    function pop()
+    {
+        return null;
+    }
 }
 
-class PersistentList extends ASeq
+class PersistentList extends ASeq implements IPersistentStack
 {
     private $head;
     private $tail;
@@ -114,5 +124,15 @@ class PersistentList extends ASeq
             $list = $list->cons($array->offsetGet($i));
         }
         return $list;
+    }
+
+    function peek()
+    {
+        return $this->head;
+    }
+
+    function pop()
+    {
+        return $this->tail;
     }
 }
