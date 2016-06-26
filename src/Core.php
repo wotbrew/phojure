@@ -4,15 +4,28 @@ namespace phojure;
 
 class Core
 {
-    public static function cons($x, $coll){
-        $coll = self::seq($coll);
-        if($coll != null)
-            return $coll->cons($x);
-
-        return new PersistentList($x, $coll);
+    static $cons = 'phojure\\Core::cons';
+    static function cons($x, $coll){
+        if($coll == null)
+            return new PersistentList($x, null);
+        else if ($coll instanceof Seq){
+            return new Cons($x, $coll);
+        }
+        else {
+            return new Cons($x, self::seq($coll));
+        }
     }
 
-    public static function plist()
+    static $conj = 'phojure\\Core::conj';
+    static function conj($x, $coll){
+        if($coll == null)
+            return new PersistentList($x, null);
+
+        return $coll->cons($x);
+    }
+
+    static $plist = 'phojure\\Core::plist';
+    static function plist()
     {
         $args = func_get_args();
         return PersistentList::ofArray($args);
@@ -37,7 +50,8 @@ class Core
         throw new \Exception("Cannot find seq");
     }
 
-    public static function seq($coll){
+    static $seq = 'phojure\\Core::seq';
+    static function seq($coll){
         if($coll instanceof ASeq) return $coll;
         else if ($coll instanceof LazySeq)
             return $coll->seq();
@@ -46,7 +60,7 @@ class Core
     }
 
     static $first = 'phojure\\Core::first';
-    public static function first($coll){
+    static function first($coll){
         $s = self::seq($coll);
         if ($s){
             return $s->first();
@@ -54,7 +68,37 @@ class Core
         return null;
     }
 
-    public static function rest($coll){
+    static $ffirst = 'phojure\\Core::ffirst';
+    static function ffirst($coll){
+        return self::first(self::first($coll));
+    }
+
+    static $nfirst = 'phojure\\Core::nfirst';
+    static function nfirst($coll){
+        return self::next(self::first($coll));
+    }
+
+    static $nnext = 'phojure\\Core::nnext';
+    static function nnext($coll){
+        return self::next(self::next($coll));
+    }
+
+    static $fnext = 'phojure\\Core::fnext';
+    static function fnext($coll){
+        return self::first(self::next($coll));
+    }
+
+    static $next = 'phojure\\Core::next';
+    static function next($coll){
+        $s = self::seq($coll);
+        if ($s){
+            return $s->next();
+        }
+        return null;
+    }
+
+    static $rest = 'phojure\\Core::rest';
+    static function rest($coll){
         $s = self::seq($coll);
         if ($s){
             return $s->rest();
@@ -62,8 +106,14 @@ class Core
         return null;
     }
 
+    static $is_seq = 'phojure\\Core::is_seq';
+    static function is_seq($coll){
+        return $coll instanceof Seq;
+    }
+
+    
     static $last = 'phojure\\Core::last';
-    public static function last($coll){
+    static function last($coll){
         $a = $coll;
         while(true){
             $x = self::seq(self::rest($a));
@@ -76,12 +126,12 @@ class Core
     }
 
 
-    public static function seqIterator($coll){
+    static function seqIterator($coll){
         return new SeqIterator(self::seq($coll));
     }
 
     static $map = 'phojure\\Core::map';
-    public static function map($f, $coll){
+    static function map($f, $coll){
         if(!$coll) return null;
         return new LazySeq(function() use ($f, $coll) {
             return self::cons(
@@ -90,7 +140,8 @@ class Core
         });
     }
 
-    public static function take($n, $coll){
+    static $take = 'phojure\\Core::take';
+    static function take($n, $coll){
         if(!$coll) return null;
         if($n <= 0) return null;
 
@@ -102,7 +153,8 @@ class Core
         });
     }
 
-    public static function drop($n, $coll){
+    static $drop = 'phojure\\Core::drop';
+    static function drop($n, $coll){
         if(!$coll) return null;
         if($n <= 0) return $coll;
         return new LazySeq(function() use ($n, $coll){
@@ -110,7 +162,8 @@ class Core
         });
     }
 
-    public static function repeat($x){
+    static $repeat = 'phojure\\Core::repeat';
+    static function repeat($x){
         return new LazySeq(function() use ($x) {
            return self::cons(
                $x,
@@ -119,10 +172,13 @@ class Core
         });
     }
 
-    public static function threadf($x){
+    static $threadf = 'phojure\\Core::threadf';
+    static function threadf($x){
         return new ThreadFirst($x);
     }
-    public static function threadl($x){
+
+    static $threadl = 'phojure\\Core::threadl';
+    static function threadl($x){
         return new ThreadLast($x);
     }
 }
