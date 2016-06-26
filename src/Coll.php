@@ -6,7 +6,6 @@ namespace phojure;
 
 class Coll
 {
-
     static $cons = 'phojure\\Coll::cons';
 
     static function cons($x, $coll)
@@ -22,7 +21,7 @@ class Coll
 
     static $conj = 'phojure\\Coll::conj';
 
-    static function conj($x, $coll)
+    static function conj($coll, $x)
     {
         if ($coll == null)
             return new PersistentList($x, null);

@@ -4,12 +4,8 @@
 namespace phojure;
 
 
-abstract class APersistentVector implements IPersistentVector, Seqable
+abstract class APersistentVector implements IPersistentVector
 {
-    function __get($name)
-    {
-        return $this->nth($name);
-    }
 
     function containsKey($key)
     {
