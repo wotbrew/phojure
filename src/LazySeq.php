@@ -29,7 +29,9 @@ class LazySeq extends ASeq
 
     function first()
     {
-        return Core::first($this->seq());
+        $s = $this->seq();
+        if($s) return $s->first();
+        return null;
     }
 
     function next()

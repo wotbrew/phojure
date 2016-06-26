@@ -6,28 +6,28 @@ class TestCore extends \PHPUnit_Framework_TestCase
 {
     function testSeq()
     {
-        $this->assertEquals(1, Core::first([1, 2, 3]));
+        $this->assertEquals(1, Coll::first([1, 2, 3]));
     }
 
     function testLazySeq()
     {
-        $this->assertNotNull(Core::repeat("hello"));
-        $this->assertNotNull(Core::drop(1000000000000, Core::repeat("hello")));
+        $this->assertNotNull(Coll::repeat("hello"));
+        $this->assertNotNull(Coll::drop(1000000000000, Coll::repeat("hello")));
 
-        $this->assertEquals("hello", Core::first(Core::drop(100000, Core::repeat("hello"))));
+        $this->assertEquals("hello", Coll::first(Coll::drop(100000, Coll::repeat("hello"))));
     }
 
     function testLast()
     {
-       $this->assertEquals("foo", Core::last(Core::take(100000, Core::repeat("foo"))));
+       $this->assertEquals("foo", Coll::last(Coll::take(100000, Coll::repeat("foo"))));
     }
     
     function testFirst()
     {
         $this->assertEquals(2,
             Core::threadl([1, 2, 3])
-                ->pipe(Core::$map, [function($x){return $x + 1;}])
-                ->pipe(Core::$first, [])
+                ->pipe(Coll::$map, [function($x){return $x + 1;}])
+                ->pipe(Coll::$first, [])
                 ->val());
     }
 }

@@ -4,7 +4,7 @@
 namespace phojure;
 
 
-interface IPersistentVector extends Associative, IPersistentStack
+interface IPersistentVector extends Associative, IPersistentStack, Indexed
 {
     function assocN($i, $val);
 }
