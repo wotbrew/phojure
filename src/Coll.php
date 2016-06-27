@@ -62,7 +62,7 @@ class Coll
     static function seq($coll)
     {
         if ($coll instanceof ASeq) return $coll;
-        else if ($coll instanceof LazySeq)
+        else if ($coll instanceof UncachedLazySeq)
             return $coll->seq();
 
         return self::seqFrom($coll);
@@ -163,7 +163,7 @@ class Coll
     static function map($f, $coll)
     {
         if (!$coll) return null;
-        return new LazySeq(function () use ($f, $coll) {
+        return new UncachedLazySeq(function () use ($f, $coll) {
             return self::cons(
                 $f(self::first($coll)),
                 self::map($f, self::rest($coll)));
@@ -177,7 +177,7 @@ class Coll
         if (!$coll) return null;
         if ($n <= 0) return null;
 
-        return new LazySeq(function () use ($n, $coll) {
+        return new UncachedLazySeq(function () use ($n, $coll) {
             return self::cons(
                 self::first($coll),
                 self::take($n - 1, self::rest($coll))
@@ -191,7 +191,7 @@ class Coll
     {
         if (!$coll) return null;
         if ($n <= 0) return $coll;
-        return new LazySeq(function () use ($n, $coll) {
+        return new UncachedLazySeq(function () use ($n, $coll) {
             return self::drop($n - 1, $coll);
         });
     }
@@ -200,11 +200,38 @@ class Coll
 
     static function repeat($x)
     {
-        return new LazySeq(function () use ($x) {
+        return new UncachedLazySeq(function () use ($x) {
             return self::cons(
                 $x,
                 self::repeat($x)
             );
         });
+    }
+
+    static $repeatn = 'phojure\\Coll::repeatn';
+    static function repeatn($n, $x){
+        return self::take($n, self::repeat($x));
+    }
+    
+    static $every = 'phojure\\Coll::every';
+    static function every($pred, $coll)
+    {
+        $s = self::seq($coll);
+        for(; $s != null; $s = $s->next()){
+            if(!$pred($s->first())){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static $arr = 'phojure\\Coll::arr';
+    static function arr($coll){
+        $s = self::seq($coll);
+        $ret = array();
+        for(; $s != null; $s = $s->next()){
+            array_push($ret, $s->first());
+        }
+        return $ret;
     }
 }

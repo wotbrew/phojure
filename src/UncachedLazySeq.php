@@ -2,7 +2,7 @@
 
 namespace phojure;
 
-class LazySeq extends ASeq
+class UncachedLazySeq extends ASeq
 {
     private $f;
 
@@ -21,7 +21,7 @@ class LazySeq extends ASeq
 
     function seq(){
         $r = $this->sval();
-        while($r instanceof LazySeq){
+        while($r instanceof UncachedLazySeq){
             $r = $r->sval();
         }
         return $r;
