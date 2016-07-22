@@ -48,4 +48,12 @@ class Core
         }
         return new ThreadFirst(call_user_func_array($f, $arr));
     }
+
+    static $hash = 'phojure\\Core::hash';
+
+    static function hash($x)
+    {
+        if ($x == null) return 0;
+        return 1;
+    }
 }

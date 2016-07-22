@@ -56,4 +56,15 @@ class TestVector extends \PHPUnit_Framework_TestCase
         $vec = Coll::vec([1, 2, 3, 4, 5]);
         $this->assertEquals([1, 2, 3, 4], Coll::arr(Coll::pop($vec)));
     }
+    function testInvoke(){
+        $vec = Coll::vec([1, 2, 3, 4, 5]);
+        $this->assertEquals(1, $vec(0));
+    }
+    function testIndexAccess(){
+        $vec = Coll::vec([1, 2, 3, 4, 5]);
+        $this->assertEquals(1, $vec[0]);
+        $this->assertEquals(2, $vec[1]);
+        $this->assertEquals(3, $vec[2]);
+        $this->assertEquals(4, $vec[3]);
+    }
 }

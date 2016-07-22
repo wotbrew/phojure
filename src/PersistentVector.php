@@ -3,6 +3,8 @@
 
 namespace phojure;
 
+use Symfony\Component\Finder\Exception\OperationNotPermitedException;
+
 class PersistentVector_Node
 {
     public $array;
@@ -329,6 +331,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         $ret->array[0] = $this->newPath($edit, $level - 5, $node);
         return $ret;
     }
+
 }
 
 
@@ -571,7 +574,7 @@ class PersistentVector_Transient implements ITransientVector
         $this->shift = $newShift;
         $this->count--;
         $this->tail = $newTail;
-        
+
         return $this;
     }
 
@@ -622,5 +625,37 @@ class PersistentVector_Transient implements ITransientVector
     public function count()
     {
         return $this->count;
+    }
+    
+    function __invoke()
+    {
+        $args = func_get_args();
+        if(count($args) == 1){
+            return $this->nth($args[0]);
+        }
+        if(count($args) == 2){
+            return $this->nthOr($args[0], $args[1]);
+        }
+        throw new \Exception("Arity error. Expected 1 or 2 args.");
+    }
+
+    public function offsetExists($offset)
+    {
+        return $offset >= 0 && $offset < $this->count();
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->nth($offset);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        throw new \Exception();
+    }
+
+    public function offsetUnset($offset)
+    {
+        throw new \Exception();
     }
 }
