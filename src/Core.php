@@ -4,6 +4,11 @@ namespace phojure;
 
 class Core
 {
+    static $add = 'phojure\\Core::add';
+    static function add($a, $b){
+        return $a + $b;
+    }
+
     static $threadf = 'phojure\\Core::threadf';
 
     static function threadf($x)

@@ -144,14 +144,52 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         return self::getEmpty();
     }
 
-    function peek()
-    {
-        // TODO: Implement peek() method.
+    private function popTail($level, PersistentVector_Node $node){
+        $subidx = Util::uRShift($this->count - 2, 0x01f);
+        if($level > 5){
+          $newchild = $this->popTail($level - 5, $node->array[$subidx]);
+          if($newchild == null && $subidx == 0){
+              return null;
+          }
+          else {
+              $ret = new PersistentVector_Node($this->root->edit, clone($node->array));
+              $ret->array[$subidx] = $newchild;
+              return $ret;
+          }
+        }
+        else if ($subidx == 0){
+            return null;
+        }
+        else {
+            $ret = new PersistentVector_Node($this->root->edit, clone($this->root->array));
+            $ret->array[$subidx] = null;
+            return $ret;
+        }
     }
 
     function pop()
     {
-        // TODO: Implement pop() method.
+        $cnt = $this->count;
+        if($cnt == 0) throw new \Exception("Can't pop empty vector");
+        if($cnt == 1) return $this->nothing();
+        
+        if($cnt - $this->tailOff()){
+            $newTail = new \SplFixedArray($this->tail->count() - 1);
+            Util::splArrayCopy($this->tail, 0, $newTail, 0, $newTail->count());
+            return new PersistentVector($cnt-1, $this->shift, $this->root, $newTail);
+        }
+
+        $newTail = $this->arrayFor($cnt - 2);
+        $newRoot = $this->popTail($this->shift, $this->root);
+        $newShift = $this->shift;
+        if($newRoot == null){
+            $newRoot = self::emptyNode();
+        }
+        if($this->shift > 5 && $newRoot->array[1] == null){
+            $newRoot = $newRoot->array[0];
+            $newShift -= 5;
+        }
+        return new PersistentVector($cnt -1, $newShift, $newRoot, $newTail);
     }
 
     function assocN($i, $val)

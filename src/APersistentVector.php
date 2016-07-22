@@ -50,6 +50,14 @@ abstract class APersistentVector implements IPersistentVector
 
         return $notFound;
     }
+
+    function peek()
+    {
+        if($this->count() > 0)
+            return $this->nth($this->count() - 1);
+        return null;
+    }
+
 }
 
 class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce

@@ -4,7 +4,7 @@
 namespace phojure;
 
 
-class TestPersistentVector extends \PHPUnit_Framework_TestCase
+class TestVector extends \PHPUnit_Framework_TestCase
 {
 
     function testAdd()
@@ -17,7 +17,7 @@ class TestPersistentVector extends \PHPUnit_Framework_TestCase
 
     function testFromSeq()
     {
-        $vec = PersistentVector::ofColl(Coll::repeatn(100, 'foo'));
+        $vec = Coll::vec(Coll::repeatn(100, 'foo'));
         $this->assertEquals(100, $vec->count());
         $this->assertTrue(Coll::every(function($x) { return $x == 'foo';}, $vec));
     }
@@ -30,9 +30,30 @@ class TestPersistentVector extends \PHPUnit_Framework_TestCase
                     ->pipe(Coll::$arr)
                     ->val();
         
-        $vec = PersistentVector::ofColl($arr);
+        $vec = Coll::vec($arr);
         $vec2 = $vec->assoc(56, 'bar');
         $this->assertEquals('bar', $vec2->nth(56));
         $this->assertEquals(Coll::arr($vec), $arr);
+    }
+
+    function testReduce()
+    {
+        $n = Coll::reduce(Core::$add, 0, Coll::vec(Coll::repeatn(10, 1)));
+        $this->assertEquals(10, $n);
+    }
+
+    function testReduceKV()
+    {
+
+    }
+
+    function testPeek(){
+        $vec = Coll::vec([1, 2, 3, 4, 5]);
+        $this->assertEquals(5, Coll::peek($vec));
+    }
+
+    function testPop(){
+        $vec = Coll::vec([1, 2, 3, 4, 5]);
+        $this->assertEquals([1, 2, 3, 4], Coll::arr(Coll::pop($vec)));
     }
 }

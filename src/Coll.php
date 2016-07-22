@@ -154,10 +154,63 @@ class Coll
         return null;
     }
 
+    static $seq_iterator = 'phojure\\Coll::seq_iterator';
 
     static function seq_iterator($coll)
     {
         return new SeqIterator(self::seq($coll));
+    }
+
+
+    private static function naive_seq_reduce($coll, $f, $init){
+        $val = $init;
+        for($seq = self::seq($coll); $seq != null; $seq = self::next($seq)){
+            $val = call_user_func($f, $val, self::first($seq));
+            if($val instanceof Reduced){
+                return $val->deref();
+            }
+        }
+        return $val;
+    }
+
+    static $peek = 'phojure\\Coll::peek';
+
+    static function peek($coll){
+        return $coll->peek();
+    }
+
+    static $pop = 'phojure\\Coll::pop';
+
+    static function pop($coll){
+        return $coll->pop();
+    }
+
+    static $reduce = 'phojure\\Coll:reduce';
+
+    static function reduce($f, $init, $coll){
+        if($coll instanceof IReduce){
+            return $coll->reduce($f, $init);
+        }
+        return self::naive_seq_reduce($coll, $f, $init);
+    }
+
+    static $reduce_kv = 'phojure\\Coll:reduce_kv';
+
+    static function reduce_kv($f, $init, $coll){
+        if($coll instanceof IKVReduce) {
+            return $coll->reduceKV($f, $init);
+        }
+
+        $val = $init;
+        $i = 0;
+        for($seq = self::seq($coll); $seq != null; $seq = self::next($seq)){
+            $val = call_user_func($f, $val, $i, self::first($seq));
+            if($val instanceof Reduced){
+                return $val->deref();
+            }
+            $i++;
+        }
+        return $val;
     }
 
     static $map = 'phojure\\Coll::map';
@@ -239,5 +292,10 @@ class Coll
             array_push($ret, $s->first());
         }
         return $ret;
+    }
+
+    static $vec = 'phojure\\Coll::vec';
+    static function vec($coll){
+        return PersistentVector::ofColl($coll);
     }
 }
