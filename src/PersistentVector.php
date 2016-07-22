@@ -402,10 +402,6 @@ class PersistentVector_Transient implements ITransientVector
         return $this->nthOr($key, $notFound);
     }
 
-    function assoc($key, $val)
-    {
-
-    }
 
     function conj($val)
     {
@@ -484,19 +480,135 @@ class PersistentVector_Transient implements ITransientVector
         return $ret;
     }
 
+    function doAssoc($level, $node, $i, $val)
+    {
+        $node = $this->ensureEditableNode($node);
+        $ret = $node;
+        if($level == 0)
+        {
+            $ret->array[$i & 0x01f] = $val;
+        }
+        else {
+            $subidx = Util::uRShift($i, $level) & 0x01f;
+            $ret->array[$subidx] = $this->doAssoc($level - 5, $node->array[$subidx], $i, $val);
+        }
+        return $ret;
+    }
+
     function assocN($i, $val)
     {
-        // TODO: Implement assocN() method.
+        $cnt = $this->count;
+        $this->ensureEditable();
+        if($i >= 0 && $i < $cnt){
+            if($i >= $this->tailOff()){
+                $this->tail[$i & 0x01f] = $val;
+                return $this;
+            }
+            $this->root = $this->doAssoc($this->shift, $this->root, $i, $val);
+            return $this;
+        }
+        if($i == $cnt) return $this->conj($val);
+        throw new \OutOfBoundsException();
+    }
+
+    function assoc($key, $val)
+    {
+        return $this->assocN($key, $val);
+    }
+
+    private function popTail($level, PersistentVector_Node $node){
+        $node = $this->ensureEditableNode($node);
+        $subidx = Util::uRShift($this->count - 2, 0x01f);
+        if($level > 5){
+            $newchild = $this->popTail($level - 5, $node->array[$subidx]);
+            if($newchild == null && $subidx == 0){
+                return null;
+            }
+            else {
+                $ret = $node;
+                $ret->array[$subidx] = $newchild;
+                return $ret;
+            }
+        }
+        else if ($subidx == 0){
+            return null;
+        }
+        else {
+            $ret = $node;
+            $ret->array[$subidx] = null;
+            return $ret;
+        }
     }
 
     function pop()
     {
-        // TODO: Implement pop() method.
+        $this->ensureEditable();
+        $cnt = $this->count;
+        if($cnt == 0) throw new \Exception("Can't pop empty vector");
+        if($cnt == 1) {
+            $this->count = 0;
+            return $this;
+        }
+
+        $i = $cnt - 1;
+        if($i & 0x01f > 0){
+            --$this->count;
+            return $this;
+        }
+
+
+        $newTail = $this->editableArrayFor($cnt - 2);
+        $newRoot = $this->popTail($this->shift, $this->root);
+        $newShift = $this->shift;
+        if($newRoot == null){
+            $newRoot = new PersistentVector_Node($this->root->edit, new \SplFixedArray(32));
+        }
+        if($this->shift > 5 && $newRoot->array[1] == null){
+            $newRoot = $this->ensureEditableNode($newRoot->array[0]);
+            $newShift -= 5;
+        }
+        $this->root = $newRoot;
+        $this->shift = $newShift;
+        $this->count--;
+        $this->tail = $newTail;
+        
+        return $this;
     }
+
+    function arrayFor($i){
+        if ( $i >= 0 && $i < $this->count){
+            if ( $i >= $this->tailOff()){
+                return $this->tail;
+            }
+            $node = $this->root;
+            for($level = $this->shift; $level > 0; $level -= 5){
+                $node = $node->array[Util::uRShift($i, $level) & 0x01f];
+            }
+            return $node->array;
+        }
+        throw new \OutOfBoundsException();
+    }
+
+    function editableArrayFor($i){
+        if ( $i >= 0 && $i < $this->count){
+            if ( $i >= $this->tailOff()){
+                return $this->tail;
+            }
+            $node = $this->root;
+            for($level = $this->shift; $level > 0; $level -= 5){
+                $node = $this->ensureEditableNode($node->array[Util::uRShift($i, $level) & 0x01f]);
+            }
+            return $node->array;
+        }
+        throw new \OutOfBoundsException();
+    }
+
 
     function nth($i)
     {
-
+        $this->ensureEditable();
+        $node = $this->arrayFor($i);
+        return $node[$i & 0x01f];
     }
 
     function nthOr($i, $notFound)
