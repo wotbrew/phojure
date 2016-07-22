@@ -6,10 +6,6 @@ namespace phojure;
 
 class TestPersistentVector extends \PHPUnit_Framework_TestCase
 {
-    function testFoo()
-    {
-        $this->assertEquals(1, 1);
-    }
 
     function testAdd()
     {

@@ -22,7 +22,7 @@ class Core
 
     static function is_reduced($x)
     {
-        return false;
+        return $x instanceof Reduced;
     }
     
     static $apply = 'phojure\\Core::apply';

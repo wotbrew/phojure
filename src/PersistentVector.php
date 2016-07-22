@@ -107,9 +107,36 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         return PersistentVector_Transient::ofPersistentVector($this);
     }
 
+    function reduce($f, $init)
+    {
+        $step = 0;
+        for($i = 0; $i < $this->count; $i+=$step){
+            $arr = $this->arrayFor($i);
+            for($j = 0; $j < $arr->count(); ++$j){
+                $init = call_user_func($f, $init, $arr[$j]);
+                if($init instanceof Reduced){
+                    return $init->deref();
+                }
+                $step = $arr->count();
+            }
+        }
+        return $init;
+    }
+
     function reduceKV($f, $init)
     {
-        // TODO: Implement reduceKV() method.
+        $step = 0;
+        for($i = 0; $i < $this->count; $i+=$step){
+            $arr = $this->arrayFor($i);
+            for($j = 0; $j < $arr->count(); ++$j){
+                $init = call_user_func($f, $init, $j+$i, $arr[$j]);
+                if($init instanceof Reduced){
+                    return $init->deref();
+                }
+                $step = $arr->count();
+            }
+        }
+        return $init;
     }
 
     function nothing()
@@ -159,10 +186,6 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         return $ret;
     }
 
-    function reduce($f, $init)
-    {
-        // TODO: Implement reduce() method.
-    }
 
     public function count()
     {
