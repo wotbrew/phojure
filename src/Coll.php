@@ -33,6 +33,8 @@ class Coll
 
     static function plist()
     {
+        if(func_num_args() == 0) return EmptyList::get();
+        
         $args = func_get_args();
         return PersistentList::ofArray($args);
     }
@@ -153,7 +155,7 @@ class Coll
     }
 
 
-    static function seqIterator($coll)
+    static function seq_iterator($coll)
     {
         return new SeqIterator(self::seq($coll));
     }
@@ -169,7 +171,7 @@ class Coll
                 self::map($f, self::rest($coll)));
         });
     }
-
+    
     static $take = 'phojure\\Coll::take';
 
     static function take($n, $coll)
@@ -209,6 +211,7 @@ class Coll
     }
 
     static $repeatn = 'phojure\\Coll::repeatn';
+
     static function repeatn($n, $x){
         return self::take($n, self::repeat($x));
     }
@@ -227,6 +230,9 @@ class Coll
 
     static $arr = 'phojure\\Coll::arr';
     static function arr($coll){
+        if(is_array($coll)) return $coll;
+        if($coll == null) return [];
+        
         $s = self::seq($coll);
         $ret = array();
         for(; $s != null; $s = $s->next()){

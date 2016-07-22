@@ -16,7 +16,7 @@ class ThreadFirst
         $this->val = $val;
     }
 
-    function pipe($name, $arguments)
+    function pipe($name, ... $arguments)
     {
         array_unshift($arguments, $this->val);
         return new ThreadFirst(call_user_func_array($name, $arguments));

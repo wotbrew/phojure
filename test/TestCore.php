@@ -26,8 +26,8 @@ class TestCore extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(2,
             Core::threadl([1, 2, 3])
-                ->pipe(Coll::$map, [function($x){return $x + 1;}])
-                ->pipe(Coll::$first, [])
+                ->pipe(Coll::$map, function($x){return $x + 1;})
+                ->pipe(Coll::$first)
                 ->val());
     }
 }

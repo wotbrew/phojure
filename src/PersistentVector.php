@@ -338,12 +338,12 @@ class PersistentVector_Transient implements ITransientVector
 
     function valAtOr($key, $notFound)
     {
-        // TODO: Implement valAtOr() method.
+        return $this->nthOr($key, $notFound);
     }
 
     function assoc($key, $val)
     {
-        // TODO: Implement assoc() method.
+
     }
 
     function conj($val)
@@ -440,11 +440,14 @@ class PersistentVector_Transient implements ITransientVector
 
     function nthOr($i, $notFound)
     {
-        // TODO: Implement nthOr() method.
+        if($this->count >= $i && $i < $this->count){
+            return $this->nth($i);
+        }
+        return $notFound;
     }
 
     public function count()
     {
-        // TODO: Implement count() method.
+        return $this->count;
     }
 }

@@ -30,8 +30,8 @@ class TestPersistentVector extends \PHPUnit_Framework_TestCase
     function testAssoc()
     {
         $arr = Core::threadl('foo')
-                    ->pipe(Coll::$repeatn, [100])
-                    ->pipe(Coll::$arr, [])
+                    ->pipe(Coll::$repeatn, 100)
+                    ->pipe(Coll::$arr)
                     ->val();
         
         $vec = PersistentVector::ofColl($arr);

@@ -16,7 +16,7 @@ class ThreadLast
         $this->val = $val;
     }
 
-    function pipe($name, $arguments)
+    function pipe($name, ... $arguments)
     {
         array_push($arguments, $this->val);
         return new ThreadLast(call_user_func_array($name, $arguments));
