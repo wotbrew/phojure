@@ -3,7 +3,7 @@
 namespace phojure;
 
 
-class ThreadFirst
+class ThreadFirst implements IDeref
 {
     private $val;
 
@@ -21,10 +21,9 @@ class ThreadFirst
         array_unshift($arguments, $this->val);
         return new ThreadFirst(call_user_func_array($name, $arguments));
     }
-
-    function val(){
+    
+    function deref()
+    {
         return $this->val;
     }
-
-
 }

@@ -89,6 +89,11 @@ abstract class APersistentVector implements IPersistentVector
     {
         throw new \Exception();
     }
+
+    function eq($a)
+    {
+        return $this->seq()->eq($a);
+    }
 }
 
 class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce
@@ -134,11 +139,12 @@ class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce
         $v = $this->vec;
         $count = $v->count();
         for($i = 0; $i < $count; $i++){
-            if(Core::is_reduced($ret)) return $ret->deref();
+            if($ret instanceof Reduced) return $ret->deref();
             $ret = $f($ret, $v->nth($i));
         }
 
-        if(Core::is_reduced($ret)) return $ret->deref();
+        if($ret instanceof Reduced) return $ret->deref();
         return $ret;
     }
+
 }

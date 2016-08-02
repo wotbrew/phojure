@@ -3,7 +3,7 @@
 namespace phojure;
 
 
-class ThreadLast
+class ThreadLast implements IDeref
 {
     private $val;
 
@@ -22,9 +22,8 @@ class ThreadLast
         return new ThreadLast(call_user_func_array($name, $arguments));
     }
 
-    function val(){
+    function deref()
+    {
         return $this->val;
     }
-
-
 }

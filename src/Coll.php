@@ -29,12 +29,12 @@ class Coll
         return $coll->cons($x);
     }
 
-    static $plist = 'phojure\\Coll::plist';
+    static $lst = 'phojure\\Coll::lst';
 
-    static function plist()
+    static function lst()
     {
-        if(func_num_args() == 0) return EmptyList::get();
-        
+        if (func_num_args() == 0) return EmptyList::get();
+
         $args = func_get_args();
         return PersistentList::ofArray($args);
     }
@@ -131,11 +131,16 @@ class Coll
         return null;
     }
 
-    static $is_seq = 'phojure\\Coll::is_seq';
+    static $isSeq = 'phojure\\Coll::is_seq';
 
-    static function is_seq($coll)
+    static function isSeq($coll)
     {
         return $coll instanceof ISeq;
+    }
+
+    static function isSequential($coll)
+    {
+        return is_array($coll) || $coll instanceof Sequential;
     }
 
 
@@ -154,19 +159,20 @@ class Coll
         return null;
     }
 
-    static $seq_iterator = 'phojure\\Coll::seq_iterator';
+    static $seqIterator = 'phojure\\Coll::seq_iterator';
 
-    static function seq_iterator($coll)
+    static function seqIterator($coll)
     {
         return new SeqIterator(self::seq($coll));
     }
 
 
-    private static function naive_seq_reduce($coll, $f, $init){
+    private static function naive_seq_reduce($coll, $f, $init)
+    {
         $val = $init;
-        for($seq = self::seq($coll); $seq != null; $seq = self::next($seq)){
+        for ($seq = self::seq($coll); $seq != null; $seq = self::next($seq)) {
             $val = call_user_func($f, $val, self::first($seq));
-            if($val instanceof Reduced){
+            if ($val instanceof Reduced) {
                 return $val->deref();
             }
         }
@@ -175,42 +181,55 @@ class Coll
 
     static $peek = 'phojure\\Coll::peek';
 
-    static function peek($coll){
+    static function peek($coll)
+    {
         return $coll->peek();
     }
 
     static $pop = 'phojure\\Coll::pop';
 
-    static function pop($coll){
+    static function pop($coll)
+    {
         return $coll->pop();
     }
 
     static $reduce = 'phojure\\Coll:reduce';
 
-    static function reduce($f, $init, $coll){
-        if($coll instanceof IReduce){
+    static function reduce($f, $init, $coll)
+    {
+        if ($coll instanceof IReduce) {
             return $coll->reduce($f, $init);
         }
         return self::naive_seq_reduce($coll, $f, $init);
     }
 
-    static $reduce_kv = 'phojure\\Coll:reduce_kv';
+    static $reduceKv = 'phojure\\Coll:reduce_kv';
 
-    static function reduce_kv($f, $init, $coll){
-        if($coll instanceof IKVReduce) {
+    static function reduceKv($f, $init, $coll)
+    {
+        if ($coll instanceof IKVReduce) {
             return $coll->reduceKV($f, $init);
         }
 
         $val = $init;
         $i = 0;
-        for($seq = self::seq($coll); $seq != null; $seq = self::next($seq)){
+        for ($seq = self::seq($coll); $seq != null; $seq = self::next($seq)) {
             $val = call_user_func($f, $val, $i, self::first($seq));
-            if($val instanceof Reduced){
+            if ($val instanceof Reduced) {
                 return $val->deref();
             }
             $i++;
         }
         return $val;
+    }
+
+    static $run = 'phojure\\Coll::run';
+
+    static function run($f, $coll)
+    {
+        self::reduce(function ($_, $x) use ($f) {
+            call_user_func($f, $x);
+        }, null, $coll);
     }
 
     static $map = 'phojure\\Coll::map';
@@ -224,7 +243,7 @@ class Coll
                 self::map($f, self::rest($coll)));
         });
     }
-    
+
     static $take = 'phojure\\Coll::take';
 
     static function take($n, $coll)
@@ -265,16 +284,38 @@ class Coll
 
     static $repeatn = 'phojure\\Coll::repeatn';
 
-    static function repeatn($n, $x){
+    static function repeatn($n, $x)
+    {
         return self::take($n, self::repeat($x));
     }
-    
+
+    static $rangeBy = 'phojure\\Coll::rangeBy';
+
+    static function rangeBy($start, $end, $step)
+    {
+        return new UncachedLazySeq(function () use ($start, $end, $step) {
+            $nxt = $start + $step;
+            return self::cons(
+                $start,
+                $nxt < $end ? self::rangeBy($nxt, $end, $step) : null
+            );
+        });
+    }
+    static $range = 'phojure\\Coll::range';
+
+    static function range($start, $end)
+    {
+        return self::rangeBy($start, $end, 1);
+    }
+
+
     static $every = 'phojure\\Coll::every';
+
     static function every($pred, $coll)
     {
         $s = self::seq($coll);
-        for(; $s != null; $s = $s->next()){
-            if(!$pred($s->first())){
+        for (; $s != null; $s = $s->next()) {
+            if (!$pred($s->first())) {
                 return false;
             }
         }
@@ -282,20 +323,35 @@ class Coll
     }
 
     static $arr = 'phojure\\Coll::arr';
-    static function arr($coll){
-        if(is_array($coll)) return $coll;
-        if($coll == null) return [];
-        
+
+    static function arr($coll)
+    {
+        if (is_array($coll)) return $coll;
+        if ($coll == null) return [];
+
         $s = self::seq($coll);
         $ret = array();
-        for(; $s != null; $s = $s->next()){
+        for (; $s != null; $s = $s->next()) {
             array_push($ret, $s->first());
         }
         return $ret;
     }
 
     static $vec = 'phojure\\Coll::vec';
-    static function vec($coll){
+
+    static function vec($coll)
+    {
         return PersistentVector::ofColl($coll);
     }
+
+    static $vector = 'phojure\\Coll::vector';
+
+    static function vector()
+    {
+        if (func_num_args() == 0) return PersistentVector::getEmpty();
+
+        $args = func_get_args();
+        return self::vec($args);
+    }
+
 }

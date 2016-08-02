@@ -25,10 +25,10 @@ class TestVector extends \PHPUnit_Framework_TestCase
 
     function testAssoc()
     {
-        $arr = Core::threadl('foo')
+        $arr = Val::threadl('foo')
                     ->pipe(Coll::$repeatn, 100)
                     ->pipe(Coll::$arr)
-                    ->val();
+                    ->deref();
         
         $vec = Coll::vec($arr);
         $vec2 = $vec->assoc(56, 'bar');
@@ -38,13 +38,18 @@ class TestVector extends \PHPUnit_Framework_TestCase
 
     function testReduce()
     {
-        $n = Coll::reduce(Core::$add, 0, Coll::vec(Coll::repeatn(10, 1)));
+        $n = Coll::reduce(Math::$add, 0, Coll::vec(Coll::repeatn(10, 1)));
         $this->assertEquals(10, $n);
     }
 
     function testReduceKV()
     {
-
+        $this->assertTrue(
+            Val::eq(
+                Coll::vector(1,2,3),
+                Coll::reduceKv(Map::$assoc, Coll::vector(), Coll::vector(1, 2, 3))
+            )
+        );
     }
 
     function testPeek(){
@@ -66,5 +71,14 @@ class TestVector extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $vec[1]);
         $this->assertEquals(3, $vec[2]);
         $this->assertEquals(4, $vec[3]);
+    }
+    function testEq(){
+        $vec = Coll::vec([1, 2, 3]);
+        $this->assertTrue(Val::eq($vec, $vec));
+        $this->assertTrue(Val::eq($vec, Coll::vec([1,2,3])));
+        $this->assertFalse(Val::eq($vec, Coll::vec([1,3,2])));
+        $this->assertTrue(Val::eq($vec, Coll::lst(1,2,3)));
+        $this->assertTrue(Val::eq($vec, Coll::range(1, 4)));
+        $this->assertFalse(Val::eq($vec, Coll::lst(1,2,3,4)));
     }
 }

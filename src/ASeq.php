@@ -12,7 +12,7 @@ abstract class ASeq implements ISeq, Seqable, Sequential, IPersistentCollection,
     function rest()
     {
         $s = $this->next();
-        if($s == null) return $this->nothing();
+        if ($s == null) return $this->nothing();
         return $s;
     }
 
@@ -26,15 +26,35 @@ abstract class ASeq implements ISeq, Seqable, Sequential, IPersistentCollection,
         return new PersistentList($x, $this);
     }
 
-    function count(){
+    function count()
+    {
         $i = 0;
-        foreach($this as $x){
+        foreach ($this as $x) {
             $i++;
         }
         return $i;
     }
 
-    function nothing(){
+    function nothing()
+    {
         return EmptyList::get();
+    }
+
+    function eq($a)
+    {
+        if (!($a instanceof Sequential
+            || $a instanceof \Iterator
+            || $a instanceof \IteratorAggregate
+            || is_array($a))
+        ) {
+            
+        }
+
+        $ms = Coll::seq($a);
+        for ($s = $this->seq(); $s != null; $s = $s->next(), $ms = $ms->next()) {
+            if ($ms == null || !Val::eq($s->first(), $ms->first()))
+                return false;
+        }
+        return $ms == null;
     }
 }

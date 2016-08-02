@@ -3,8 +3,6 @@
 
 namespace phojure;
 
-use Symfony\Component\Finder\Exception\OperationNotPermitedException;
-
 class PersistentVector_Node
 {
     public $array;

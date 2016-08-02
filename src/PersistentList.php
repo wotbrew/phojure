@@ -73,6 +73,11 @@ class EmptyList implements Seqable, ISeq, IPersistentCollection, \Iterator, \Cou
     {
         return null;
     }
+
+    function eq($a)
+    {
+        return $a === self::get();
+    }
 }
 
 class PersistentList extends ASeq implements IPersistentStack
