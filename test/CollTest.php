@@ -40,4 +40,9 @@ class CollTest extends \PHPUnit_Framework_TestCase
                 ->pipe(Coll::$first)
                 ->deref());
     }
+
+    function testNthOnSeq()
+    {
+        $this->assertEquals(3, Coll::nth(Coll::lst(1,2,3), 2));
+    }
 }

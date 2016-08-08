@@ -129,4 +129,33 @@ class VectorTest extends \PHPUnit_Framework_TestCase
         $bench->run();
     }
 
+    function testBenchNthSequential()
+    {
+
+        $bench = new Benchmark();
+        $bench->setCount(10);
+        $arr = range(0, 1000);
+        $vec = Coll::vec($arr);
+        $vect = Coll::transient($vec);
+
+        $bench->add('vector-nth-sequential', function() use ($vec){
+            for($i = 0; $i < 1000; $i++){
+                Coll::nth($vec, $i);
+            }
+        });
+
+        $bench->add('vector-nth-transient-sequential', function() use ($vect){
+            for($i = 0; $i < 1000; $i++){
+                Coll::nth($vect, $i);
+            }
+        });
+
+        $bench->add('array-nth-sequential', function() use ($arr){
+            for($i = 0; $i < 1000; $i++){
+                Coll::nth($arr, $i);
+            }
+        });
+
+        $bench->run();
+    }
 }

@@ -293,7 +293,11 @@ class Coll
         if (!$coll) return null;
         if ($n <= 0) return $coll;
         return new UncachedLazySeq(function () use ($n, $coll) {
-            return self::drop($n - 1, $coll);
+            $rest = Coll::rest($coll);
+            if($rest !== null) {
+                return self::drop($n - 1, $rest);
+            }
+            return null;
         });
     }
 
@@ -376,6 +380,25 @@ class Coll
     static function vector(... $xs)
     {
         return self::vec($xs);
+    }
+
+    static $nth = self::class . '::nth';
+
+    static function nth($coll, $i, $notFound = null)
+    {
+        if($coll instanceof Indexed){
+            return $coll->nthOr($i, $notFound);
+        }
+
+        if(is_array($coll)){
+            return Map::get($coll, $i, $notFound);
+        }
+
+        if($coll instanceof Sequential){
+            return self::first(self::drop($i, $coll));
+        }
+
+        return $notFound;
     }
 
     static $transient = self::class . '::transient';

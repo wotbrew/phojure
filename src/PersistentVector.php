@@ -429,7 +429,8 @@ class PersistentVector_Transient implements ITransientVector
         $tail[0] = $val;
         $newshift = $this->shift;
         if (Util::uRShift($this->count, 5) > (1 << $this->shift)) {
-            $newroot = new PersistentVector_Node($root->edit, array_fill(0, 32, null));
+            $arr = array_fill(0, 32, null);
+            $newroot = new PersistentVector_Node($root->edit, $arr);
             $newroot->array[0] = $root;
             $newroot->array[1] = $this->newPath($root->edit, $this->shift, $tailnode);
             $newshift += 5;
@@ -480,7 +481,8 @@ class PersistentVector_Transient implements ITransientVector
     {
         if ($level == 0)
             return $node;
-        $ret = new PersistentVector_Node($edit, array_fill(0, 32, null));
+        $newarr = array_fill(0, 32, null);
+        $ret = new PersistentVector_Node($edit, $newarr);
         $ret->array[0] = $this->newPath($edit, $level - 5, $node);
         return $ret;
     }
