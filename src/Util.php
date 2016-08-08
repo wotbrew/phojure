@@ -17,7 +17,9 @@ class Util
 
     static $splArrayCopy = "phojure\\Util::splArrayCopy";
 
-    static function splArrayCopy($a, int $aoffset, $b, int $boffset, int $length)
+    static function splArrayCopy(\SplFixedArray $a, int $aoffset,
+                                 \SplFixedArray $b, int $boffset,
+                                 int $length)
     {
         for ($i = 0; $i < $length; $i++) {
             $b[$i + $boffset] = $a[$aoffset + $i];

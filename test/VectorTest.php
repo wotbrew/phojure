@@ -95,30 +95,33 @@ class TestVector extends \PHPUnit_Framework_TestCase
 
     function testBench()
     {
-        $bench = new Benchmark();
-        $bench->setCount(100);
+        echo '\n';
 
-        $bench->add('vector-build-conj-100', function(){
+        $bench = new Benchmark();
+        $bench->setCount(10);
+
+        $bench->add('vector-build-conj', function(){
             $vec = Coll::vector();
-            for($i = 0; $i < 100; $i++){
+            for($i = 0; $i < 1000; $i++){
                 $vec = Coll::conj($vec, $i);
             }
         });
 
-        $bench->add('vector-build-transient-conj-100', function(){
+        $bench->add('vector-build-transient-conj', function(){
            $vec = Coll::transient(Coll::vector());
-           for($i = 0; $i < 100; $i++){
+           for($i = 0; $i < 1000; $i++){
                $vec = Transient::conj($vec, $i);
            }
            $vec = Transient::persistent($vec); 
         });
 
-        $bench->add('array-build-push-100', function(){
+        $bench->add('array-build-push', function(){
             $arr = [];
-            for($i = 0; $i < 100; $i++){
+            for($i = 0; $i < 1000; $i++){
                array_push($arr, $i);
             }
         });
+
 
 
         $bench->run();
