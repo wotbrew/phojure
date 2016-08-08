@@ -1,5 +1,6 @@
 {"require-dev": {
-    "lavoiesl/php-benchmark": "^1.4"
+    "lavoiesl/php-benchmark": "^1.4",
+  "phpunit/phpunit": "^5.4"
   },
 "autoload": {
   "classmap": ["src/"]
@@ -11,6 +12,5 @@
   "bin-dir": "bin/"
 },
   "require": {
-    "phpunit/phpunit": "^5.4"
   }
 }
