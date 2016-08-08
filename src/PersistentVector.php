@@ -13,7 +13,7 @@ class PersistentVector_Node
      * @param $array
      * @param $edit
      */
-    public function __construct($edit, $array)
+    public function __construct($edit, &$array)
     {
         $this->array = $array;
         $this->edit = $edit;
@@ -30,7 +30,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     {
         static $node;
         if (!$node) {
-            $arr = new \SplFixedArray(32);
+            $arr = array_fill(0, 32, null);
             $node = new PersistentVector_Node(self::$NO_EDIT, $arr);
         }
         return $node;
@@ -40,7 +40,8 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     {
         static $empty;
         if (!$empty) {
-            $empty = new PersistentVector(0, 5, self::emptyNode(), new \SplFixedArray());
+            $arr = [];
+            $empty = new PersistentVector(0, 5, self::emptyNode(), $arr);
         }
         return $empty;
     }
@@ -52,7 +53,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
      */
     private $root;
     /**
-     * @var \SplFixedArray
+     * @var array
      */
     private $tail;
 
@@ -63,7 +64,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
      * @param $root
      * @param $tail
      */
-    public function __construct($count, $shift, $root, $tail)
+    public function __construct($count, $shift, $root, &$tail)
     {
         $this->count = $count;
         $this->shift = $shift;
@@ -112,12 +113,12 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         $step = 0;
         for($i = 0; $i < $this->count; $i+=$step){
             $arr = $this->arrayFor($i);
-            for($j = 0; $j < $arr->count(); ++$j){
+            for($j = 0; $j < count($arr); ++$j){
                 $init = call_user_func($f, $init, $arr[$j]);
                 if($init instanceof Reduced){
                     return $init->deref();
                 }
-                $step = $arr->count();
+                $step = count($arr);
             }
         }
         return $init;
@@ -128,12 +129,12 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         $step = 0;
         for($i = 0; $i < $this->count; $i+=$step){
             $arr = $this->arrayFor($i);
-            for($j = 0; $j < $arr->count(); ++$j){
+            for($j = 0; $j < count($arr); ++$j){
                 $init = call_user_func($f, $init, $j+$i, $arr[$j]);
                 if($init instanceof Reduced){
                     return $init->deref();
                 }
-                $step = $arr->count();
+                $step = count($arr);
             }
         }
         return $init;
@@ -152,7 +153,8 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
               return null;
           }
           else {
-              $ret = new PersistentVector_Node($this->root->edit, clone($node->array));
+              $newArr = $node->array;
+              $ret = new PersistentVector_Node($this->root->edit, $newArr);
               $ret->array[$subidx] = $newchild;
               return $ret;
           }
@@ -161,7 +163,8 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
             return null;
         }
         else {
-            $ret = new PersistentVector_Node($this->root->edit, clone($this->root->array));
+            $newArr = $this->root->array;
+            $ret = new PersistentVector_Node($this->root->edit, $newArr);
             $ret->array[$subidx] = null;
             return $ret;
         }
@@ -174,8 +177,8 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         if($cnt == 1) return $this->nothing();
         
         if($cnt - $this->tailOff()){
-            $newTail = new \SplFixedArray($this->tail->count() - 1);
-            Util::splArrayCopy($this->tail, 0, $newTail, 0, $newTail->count());
+            $newTail = $this->tail;
+            array_pop($newTail);
             return new PersistentVector($cnt-1, $this->shift, $this->root, $newTail);
         }
 
@@ -197,8 +200,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         if($i >= 0 && $i < $this->count){
             if($i > $this->tailOff()){
 
-                $newtail = new \SplFixedArray($this->tail->count());
-                Util::splArrayCopy($this->tail, 0, $newtail, 0, $this->tail->count());
+                $newtail = $this->tail;
                 $newtail[$i & 0x01f] = $val;
 
                 return new PersistentVector($this->count, $this->shift, $this->root, $newtail);
@@ -214,7 +216,8 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     }
 
     private function doAssoc($level, $node, $i, $val){
-        $ret = new PersistentVector_Node($node->edit, clone $node->array);
+        $newArr = $node->array;
+        $ret = new PersistentVector_Node($node->edit, $newArr);
         if($level == 0){
             $ret->array[$i & 0x01f] = $val;
         }
@@ -233,7 +236,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
 
     static function ofSeq(ISeq $coll)
     {
-        $arr = new \SplFixedArray(32);
+        $arr = array_fill(0, 32, null);
         $i = 0;
         for (; $coll != null && $i < 32; $coll = $coll->next()) {
             $arr[$i++] = $coll->first();
@@ -248,8 +251,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         } else if ($i == 32) {
             return new PersistentVector(32, 5, self::emptyNode(), $arr);
         } else {
-            $arr2 = new \SplFixedArray($i);
-            Util::splArrayCopy($arr, 0, $arr2, 0, $i);
+            $arr2 = array_slice($arr, 0, $i);
             return new PersistentVector($i, 5, self::emptyNode(), $arr2);
         }
     }
@@ -261,17 +263,17 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         return self::ofSeq(Coll::seq($coll));
     }
 
-    function UNSAFE_getTail()
+    function &UNSAFE_getTail()
     {
         return $this->tail;
     }
 
-    function UNSAFE_getRoot()
+    function &UNSAFE_getRoot()
     {
         return $this->root;
     }
 
-    function UNSAFE_getShift()
+    function &UNSAFE_getShift()
     {
         return $this->shift;
     }
@@ -284,32 +286,31 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         $root = $this->root;
 
         if ($count - $this->tailOff() < 32) {
-            $newTail = new \SplFixedArray($tail->count() + 1);
-            Util::splArrayCopy($tail, 0, $newTail, 0, $tail->count());
-            $newTail[$tail->count()] = $val;
+            $newTail = $tail;
+            array_push($newTail, $val);
             return new PersistentVector($count + 1, $shift, $root, $newTail);
         }
         $newroot = null;
         $tailnode = new PersistentVector_Node($root->edit, $tail);
         $newshift = $shift;
         if (Util::uRShift($count, 5) > (1 << $shift)) {
-            $newroot = new PersistentVector_Node($root->edit, new \SplFixedArray(32));
-            $newroot->array[0] = $root;
-            $newroot->array[1] = $this->newPath($root->edit, $shift, $tailnode);
+            $newarr = array_fill(0,32,null);
+            $newarr[0] = $root;
+            $newarr[1] = $this->newPath($root->edit, $shift, $tailnode);
+            $newroot = new PersistentVector_Node($root->edit, $newarr);
             $newshift += 5;
         } else {
             $newroot = $this->pushTail($shift, $root, $tail);
         }
 
-        $tail2 = new \SplFixedArray(1);
-        $tail2[0] = $val;
+        $tail2 = [$val];
         return new PersistentVector($count + 1, $newshift, $newroot, $tail2);
     }
 
     private function pushTail($level, $parent, $tailnode)
     {
         $subidx = Util::uRShift($this->count - 1, $level) & 0x01f;
-        $ret = new PersistentVector_Node($parent->edit, clone $parent->array);
+        $newarr = $parent->array;
         $nodeToInsert = null;
         if ($level == 5) {
             $nodeToInsert = $tailnode;
@@ -319,15 +320,17 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
                 $this->pushTail($level - 5, $child, $tailnode) :
                 $this->newPath($this->root->edit, $level - 5, $tailnode);
         }
-        $ret->array[$subidx] = $nodeToInsert;
+        $newarr[$subidx] = $nodeToInsert;
+        $ret = new PersistentVector_Node($parent->edit, $newarr);
         return $ret;
     }
 
     private function newPath($edit, $level, $node)
     {
         if ($level == 0) return $node;
-        $ret = new PersistentVector_Node($edit, new \SplFixedArray(32));
-        $ret->array[0] = $this->newPath($edit, $level - 5, $node);
+        $newarr = array_fill(0,32,null);
+        $newarr[0] = $this->newPath($edit, $level - 5, $node);
+        $ret = new PersistentVector_Node($edit, $newarr);
         return $ret;
     }
 
@@ -341,7 +344,7 @@ class PersistentVector_Transient implements ITransientVector
     private $root;
     private $tail;
 
-    private function __construct($count, $shift, $root, $tail)
+    private function __construct($count, $shift, $root, &$tail)
     {
         $this->tail = $tail;
         $this->root = $root;
@@ -351,30 +354,30 @@ class PersistentVector_Transient implements ITransientVector
 
     static function ofPersistentVector(PersistentVector $vec)
     {
+        $tail = self::editableTail($vec->UNSAFE_getTail());
+
         return new PersistentVector_Transient($vec->count(),
             $vec->UNSAFE_getShift(),
             self::editableRoot($vec->UNSAFE_getRoot()),
-            self::editableTail($vec->UNSAFE_getTail()));
+            $tail);
     }
 
     static function editableRoot($root)
     {
         static $ctr = 0;
         $ctr++;
-        return new PersistentVector_Node($ctr, clone $root->array);
+        $newRoot = $root->array;
+        return new PersistentVector_Node($ctr, $newRoot);
     }
 
-    static function editableTail(\SplFixedArray $tail)
+    static function editableTail($tail)
     {
-        $ret = new \SplFixedArray(32);
-        Util::splArrayCopy($tail, 0, $ret, 0, $tail->count());
-        return $ret;
+        return $tail;
     }
 
     private function ensureEditable()
     {
         if ($this->root->edit == null) {
-            var_dump($this->root);
             throw new \Exception("Transient used after persistent call");
         }
     }
@@ -384,7 +387,8 @@ class PersistentVector_Transient implements ITransientVector
         if ($this->root->edit === $node->edit)
             return $node;
 
-        return new PersistentVector_Node($this->root->edit, clone $node->array);
+        $newarr = $node->array;
+        return new PersistentVector_Node($this->root->edit, $newarr);
     }
 
     function tailOff()
@@ -409,7 +413,7 @@ class PersistentVector_Transient implements ITransientVector
     {
         $this->ensureEditable();
         $root = $this->root;
-        $tail = $this->tail;
+        $tail = &$this->tail;
         $i = $this->count;
 
         if ($i - $this->tailOff() < 32) {
@@ -420,12 +424,12 @@ class PersistentVector_Transient implements ITransientVector
 
         $newroot = null;
         $tailnode = new PersistentVector_Node($root->edit, $tail);
-        $this->tail = new \SplFixedArray(32);
-        $tail = $this->tail;
+        $this->tail = array_fill(0, 32, null);
+        $tail = &$this->tail;
         $tail[0] = $val;
         $newshift = $this->shift;
         if (Util::uRShift($this->count, 5) > (1 << $this->shift)) {
-            $newroot = new PersistentVector_Node($root->edit, new \SplFixedArray(32));
+            $newroot = new PersistentVector_Node($root->edit, array_fill(0, 32, null));
             $newroot->array[0] = $root;
             $newroot->array[1] = $this->newPath($root->edit, $this->shift, $tailnode);
             $newshift += 5;
@@ -467,8 +471,7 @@ class PersistentVector_Transient implements ITransientVector
     {
         $this->ensureEditable();
 
-        $trimmedTail = new \SplFixedArray($this->count - $this->tailOff());
-        Util::splArrayCopy($this->tail, 0, $trimmedTail, 0, $trimmedTail->count());
+        $trimmedTail = array_slice($this->tail, 0, $this->count - $this->tailOff());
         $this->edit = false;
         return new PersistentVector($this->count, $this->shift, $this->root, $trimmedTail);
     }
@@ -477,7 +480,7 @@ class PersistentVector_Transient implements ITransientVector
     {
         if ($level == 0)
             return $node;
-        $ret = new PersistentVector_Node($edit, new \SplFixedArray(32));
+        $ret = new PersistentVector_Node($edit, array_fill(0, 32, null));
         $ret->array[0] = $this->newPath($edit, $level - 5, $node);
         return $ret;
     }
@@ -563,7 +566,7 @@ class PersistentVector_Transient implements ITransientVector
         $newRoot = $this->popTail($this->shift, $this->root);
         $newShift = $this->shift;
         if($newRoot == null){
-            $newRoot = new PersistentVector_Node($this->root->edit, new \SplFixedArray(32));
+            $newRoot = new PersistentVector_Node($this->root->edit, array_fill(0, 32, null));
         }
         if($this->shift > 5 && $newRoot->array[1] == null){
             $newRoot = $this->ensureEditableNode($newRoot->array[0]);

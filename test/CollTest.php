@@ -2,11 +2,21 @@
 
 namespace phojure;
 
-class TestVal extends \PHPUnit_Framework_TestCase
+class CollTest extends \PHPUnit_Framework_TestCase
 {
     function testSeq()
     {
         $this->assertEquals(1, Coll::first([1, 2, 3]));
+    }
+
+    function testSeqIterator()
+    {
+        $arr = [];
+        foreach(Coll::range(0, 100) as $x){
+            array_push($arr, $x);
+        }
+
+        $this->assertTrue(Val::eq(Coll::range(0, 100), $arr));
     }
 
     function testLazySeq()

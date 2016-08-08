@@ -6,14 +6,16 @@ namespace phojure;
 
 use Lavoiesl\PhpBenchmark\Benchmark;
 
-class TestVector extends \PHPUnit_Framework_TestCase
+class VectorTest extends \PHPUnit_Framework_TestCase
 {
 
     function testAdd()
     {
-        $vec = PersistentVector::getEmpty();
-        $vec = Coll::conj($vec, 'hello');
-        $this->assertEquals('hello', $vec->nth(0));
+        $vec1 = PersistentVector::getEmpty();
+        $vec2 = Coll::conj($vec1, 'hello');
+        $this->assertEquals(Coll::vector(), $vec1);
+        $this->assertTrue(Val::eq($vec1, Coll::lst()));
+        $this->assertEquals('hello', $vec2->nth(0));
     }
 
 
@@ -21,6 +23,7 @@ class TestVector extends \PHPUnit_Framework_TestCase
     {
         $vec = Coll::vec(Coll::repeatn(100, 'foo'));
         $this->assertEquals(100, $vec->count());
+
         $this->assertTrue(Coll::every(function($x) { return $x == 'foo';}, $vec));
     }
 
@@ -34,8 +37,10 @@ class TestVector extends \PHPUnit_Framework_TestCase
         
         $vec = Coll::vec($arr);
         $vec2 = $vec->assoc(56, 'bar');
+        $this->assertNotEquals($vec, $vec2);
         $this->assertEquals('bar', $vec2->nth(56));
-        $this->assertEquals(Coll::arr($vec), $arr);
+
+        $this->assertEquals($arr, Coll::arr($vec));
     }
 
     function testReduce()
@@ -93,9 +98,8 @@ class TestVector extends \PHPUnit_Framework_TestCase
         $this->assertNotEquals(Val::hash(Coll::vector()), Val::hash(Coll::vector(1,2,3)));
     }
 
-    function testBench()
+    function testBenchBuild()
     {
-        echo '\n';
 
         $bench = new Benchmark();
         $bench->setCount(10);
@@ -122,8 +126,7 @@ class TestVector extends \PHPUnit_Framework_TestCase
             }
         });
 
-
-
         $bench->run();
     }
+
 }

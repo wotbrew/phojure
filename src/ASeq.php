@@ -31,7 +31,7 @@ abstract class ASeq implements ISeq, Seqable, Sequential,
     function rest()
     {
         $s = $this->next();
-        if ($s == null) return $this->nothing();
+        if ($s === null) return $this->nothing();
         return $s;
     }
 
@@ -66,14 +66,14 @@ abstract class ASeq implements ISeq, Seqable, Sequential,
             || $a instanceof \IteratorAggregate
             || is_array($a))
         ) {
-            
+            return  false;
         }
 
         $ms = Coll::seq($a);
-        for ($s = $this->seq(); $s != null; $s = $s->next(), $ms = $ms->next()) {
-            if ($ms == null || !Val::eq($s->first(), $ms->first()))
+        for ($s = $this->seq(); $s !== null; $s = $s->next(), $ms = $ms->next()) {
+            if ($ms === null || !Val::eq($s->first(), $ms->first()))
                 return false;
         }
-        return $ms == null;
+        return $ms === null && $s === null;
     }
 }

@@ -17,7 +17,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
 
     function entryAt($key)
     {
-        if($key >= 0 && $key < $this->count()){
+        if ($key >= 0 && $key < $this->count()) {
             return MapEntry::create($key, $this->nth($key));
         }
         return null;
@@ -40,7 +40,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
 
     function seq()
     {
-        if($this->count() > 0){
+        if ($this->count() > 0) {
             return new APersistentVector_Seq($this, 0);
         }
         return null;
@@ -48,7 +48,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
 
     function nthOr($i, $notFound)
     {
-        if($i >= 0 && $i < $this->count())
+        if ($i >= 0 && $i < $this->count())
             return $this->nth($i);
 
         return $notFound;
@@ -56,7 +56,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
 
     function peek()
     {
-        if($this->count() > 0)
+        if ($this->count() > 0)
             return $this->nth($this->count() - 1);
         return null;
     }
@@ -64,10 +64,10 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
     function __invoke()
     {
         $args = func_get_args();
-        if(count($args) == 1){
+        if (count($args) == 1) {
             return $this->nth($args[0]);
         }
-        if(count($args) == 2){
+        if (count($args) == 2) {
             return $this->nthOr($args[0], $args[1]);
         }
         throw new \Exception("Arity error. Expected 1 or 2 args.");
@@ -95,7 +95,61 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
 
     function eq($a)
     {
-        return $this->seq()->eq($a);
+        if ($a === $this) {
+            return true;
+        }
+
+        if ($a instanceof IPersistentVector) {
+
+            if ($a->count() !== $this->count()) {
+                return false;
+            }
+
+            $cnt = $this->count();
+            for ($i = 0; $i < $cnt; $i++) {
+                if (!Val::eq($a->nth($i), $this->nth($i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if ($a instanceof Traversable) {
+
+            if ($a instanceof \Countable) {
+                if (count($a) !== $this->count()) {
+                    return false;
+                }
+            }
+
+            $i = 0;
+            foreach ($a as $x) {
+                $v = $this->nth($i);
+                if (!Val::eq($x, $v)) {
+                    return false;
+                }
+                $i++;
+            }
+            return true;
+        }
+
+        if ($a instanceof Sequential) {
+            $seq = Coll::seq($a);
+            $cnt = $this->count();
+            for ($i = 0; $i < $cnt; $i++) {
+                $fst = Coll::first($seq);
+                $v = $this->nth($i);
+                if ($seq === null || !Val::eq($v, $fst)) {
+                    return false;
+                }
+                $seq = Coll::next($seq);
+            }
+            return $seq === null;
+        }
+
+
+
+        return false;
     }
 
     public function getIterator()
@@ -105,10 +159,10 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
 
     function hash()
     {
-        if($this->hash === -1){
+        if ($this->hash === -1) {
             $n = 0;
             $hash = 1;
-            for($i=0; $i<$this->count(); $i++){
+            for ($i = 0; $i < $this->count(); $i++) {
                 $hash = 31 * $hash + Val::hash($this->nth($i));
                 ++$n;
             }
@@ -152,7 +206,7 @@ class APersistentVector_Iterator implements \Iterator
 
     public function valid()
     {
-        return $this->i <  $this->count;
+        return $this->i < $this->count;
     }
 
     public function rewind()
@@ -182,7 +236,7 @@ class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce
 
     function next()
     {
-        if($this->i + 1 < $this->vec->count()){
+        if ($this->i + 1 < $this->vec->count()) {
             return new APersistentVector_Seq($this->vec, $this->i + 1);
         }
         return null;
@@ -203,12 +257,12 @@ class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce
         $ret = $init;
         $v = $this->vec;
         $count = $v->count();
-        for($i = 0; $i < $count; $i++){
-            if($ret instanceof Reduced) return $ret->deref();
+        for ($i = 0; $i < $count; $i++) {
+            if ($ret instanceof Reduced) return $ret->deref();
             $ret = $f($ret, $v->nth($i));
         }
 
-        if($ret instanceof Reduced) return $ret->deref();
+        if ($ret instanceof Reduced) return $ret->deref();
         return $ret;
     }
 

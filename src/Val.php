@@ -23,7 +23,7 @@ class Val
     static function eq($a, $b)
     {
         if ($a === $b) return true;
-        if ($a != null) {
+        if ($a !== null) {
             if ($a instanceof IEq) {
                 return $a->eq($b);
             } elseif ($b instanceof IEq) {
@@ -38,7 +38,7 @@ class Val
 
     static function hash($o)
     {
-        if ($o == null) return 0;
+        if ($o === null) return 0;
         if ($o instanceof IHashEq) return $o->hash();
         if(is_int($o)) return Murmur3::hashInt($o);
         if(is_array($o)) return Murmur3::hashOrdered($o);

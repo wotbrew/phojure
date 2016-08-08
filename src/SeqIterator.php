@@ -22,13 +22,13 @@ class SeqIterator implements \Iterator
 
     public function current()
     {
-        Val::first($this->s);
+        return Coll::first($this->s);
     }
 
     public function next()
     {
         $this->i++;
-        $this->s = Val::rest($this->s);
+        $this->s = Coll::rest($this->s);
     }
 
     public function key()
@@ -38,7 +38,7 @@ class SeqIterator implements \Iterator
 
     public function valid()
     {
-        return Val::seq($this->s) != null;
+        return Coll::seq($this->s) !== null;
     }
 
     public function rewind()
