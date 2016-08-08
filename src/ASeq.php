@@ -2,8 +2,27 @@
 
 namespace phojure;
 
-abstract class ASeq implements ISeq, Seqable, Sequential, IPersistentCollection, \IteratorAggregate, \Countable
+abstract class ASeq implements ISeq, Seqable, Sequential,
+    IPersistentCollection, \IteratorAggregate, \Countable,
+    IHashEq
 {
+
+    private $hash = -1;
+
+    function hash()
+    {
+        if($this->hash === -1){
+            $n = 0;
+            $hash = 1;
+            for($seq=$this->seq(); $seq !== null; $seq = $seq->next()){
+                $hash = 31 * $hash + Val::hash($seq->first());
+                ++$n;
+            }
+            $this->hash = Murmur3::mixCollHash($hash, $n);
+        }
+        return $this->hash;
+    }
+
     public function getIterator()
     {
         return new SeqIterator($this->seq());

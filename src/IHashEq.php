@@ -6,5 +6,5 @@ namespace phojure;
 
 interface IHashEq
 {
-    function hasheq();
+    function hash();
 }

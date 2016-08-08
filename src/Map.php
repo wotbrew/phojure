@@ -79,4 +79,15 @@ class Map
         // todo create map
         return null;
     }
+
+    static $pull = 'phojure\\Map::pull';
+
+    static function pull($m, ... $ks)
+    {
+        if($m === null)
+            return null;
+
+        return Coll::keep(function($k) use ($m) { return Map::get($m, $k); }, $ks);
+    }
+
 }

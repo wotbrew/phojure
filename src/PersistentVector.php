@@ -196,9 +196,10 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     {
         if($i >= 0 && $i < $this->count){
             if($i > $this->tailOff()){
+
                 $newtail = new \SplFixedArray($this->tail->count());
                 Util::splArrayCopy($this->tail, 0, $newtail, 0, $this->tail->count());
-                $newtail[$i & 0x01f];
+                $newtail[$i & 0x01f] = $val;
 
                 return new PersistentVector($this->count, $this->shift, $this->root, $newtail);
             }

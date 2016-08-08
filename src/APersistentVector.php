@@ -4,8 +4,11 @@
 namespace phojure;
 
 
-abstract class APersistentVector implements IPersistentVector
+use Traversable;
+
+abstract class APersistentVector implements IPersistentVector, IHashEq, \IteratorAggregate
 {
+    private $hash = -1;
 
     function containsKey($key)
     {
@@ -93,6 +96,68 @@ abstract class APersistentVector implements IPersistentVector
     function eq($a)
     {
         return $this->seq()->eq($a);
+    }
+
+    public function getIterator()
+    {
+        return new APersistentVector_Iterator($this);
+    }
+
+    function hash()
+    {
+        if($this->hash === -1){
+            $n = 0;
+            $hash = 1;
+            for($i=0; $i<$this->count(); $i++){
+                $hash = 31 * $hash + Val::hash($this->nth($i));
+                ++$n;
+            }
+            $this->hash = Murmur3::mixCollHash($hash, $n);
+        }
+        return $this->hash;
+    }
+}
+
+class APersistentVector_Iterator implements \Iterator
+{
+
+    private $count;
+    private $i;
+    private $vec;
+
+    /**
+     * APersistentVector_Iterator constructor.
+     */
+    public function __construct(IPersistentVector $vec)
+    {
+        $this->vec = $vec;
+        $this->i = 0;
+        $this->count = $vec->count();
+    }
+
+    public function current()
+    {
+        return $this->vec->nth($i);
+    }
+
+    public function next()
+    {
+        $this->i++;
+    }
+
+    public function key()
+    {
+        return $this->i;
+    }
+
+    public function valid()
+    {
+        return $this->i <  $this->count;
+    }
+
+    public function rewind()
+    {
+        return $this->i = 0;
     }
 }
 

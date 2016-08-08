@@ -20,7 +20,7 @@ class Murmur3
 
     private static function rotateLeft($i, $distance)
     {
-        return ($i << $distance | Util::uRShift($i, -$distance));
+        return ($i << $distance | ($i >> 32-$distance));
     }
 
     private static function mixK1($k1)
@@ -42,7 +42,7 @@ class Murmur3
     private static function fmix($h1, $length)
     {
         $h1 ^= $length;
-        $h1 ^= Util::uRShift($$h1, 16);
+        $h1 ^= Util::uRShift($h1, 16);
         $h1 *= 0x85ebca6b;
         $h1 ^= Util::uRShift($h1, 13);
         $h1 *= 0xc2b2ae35;
@@ -58,4 +58,39 @@ class Murmur3
 
         return self::fmix($h1, 4);
     }
-}
+
+    public static function mixCollHash($hash, $count)
+    {
+        $h1 = self::$seed;
+        $k1 = self::mixK1($hash);
+        $h1 = self::mixH1($h1, $k1);
+        return self::fmix($h1, $count);
+    }
+
+    public static function hashOrdered($xs)
+    {
+        $n = 0;
+        $hash = -1;
+
+        foreach($xs as $x) {
+
+            $hash = 31 * $hash + Val::hash($x);
+            ++$n;
+        }
+
+        return self::mixCollHash($hash, $n);
+    }
+
+    public static function hashUnordered($xs)
+    {
+        $n = 0;
+        $hash = -1;
+
+        foreach($xs as $x) {
+            $hash += Val::hash($x);
+            ++$n;
+        }
+
+        return self::mixCollHash($hash, $n);
+    }
+}   

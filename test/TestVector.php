@@ -4,6 +4,8 @@
 namespace phojure;
 
 
+use Lavoiesl\PhpBenchmark\Benchmark;
+
 class TestVector extends \PHPUnit_Framework_TestCase
 {
 
@@ -80,5 +82,45 @@ class TestVector extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Val::eq($vec, Coll::lst(1,2,3)));
         $this->assertTrue(Val::eq($vec, Coll::range(1, 4)));
         $this->assertFalse(Val::eq($vec, Coll::lst(1,2,3,4)));
+    }
+
+    function testHash(){
+        $vec = Coll::vec([1, 2, 3]);
+        $this->assertEquals(Val::hash($vec), Val::hash($vec));
+        $this->assertEquals(Val::hash($vec), Val::hash(Coll::vector(1,2,3)));
+        $this->assertEquals(Val::hash($vec), Val::hash(Coll::lst(1,2,3)));
+
+        $this->assertNotEquals(Val::hash(Coll::vector()), Val::hash(Coll::vector(1,2,3)));
+    }
+
+    function testBench()
+    {
+        $bench = new Benchmark();
+        $bench->setCount(100);
+
+        $bench->add('vector-build-conj-100', function(){
+            $vec = Coll::vector();
+            for($i = 0; $i < 100; $i++){
+                $vec = Coll::conj($vec, $i);
+            }
+        });
+
+        $bench->add('vector-build-transient-conj-100', function(){
+           $vec = Coll::transient(Coll::vector());
+           for($i = 0; $i < 100; $i++){
+               $vec = Transient::conj($vec, $i);
+           }
+           $vec = Transient::persistent($vec); 
+        });
+
+        $bench->add('array-build-push-100', function(){
+            $arr = [];
+            for($i = 0; $i < 100; $i++){
+               array_push($arr, $i);
+            }
+        });
+
+
+        $bench->run();
     }
 }

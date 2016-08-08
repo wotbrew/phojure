@@ -31,12 +31,9 @@ class Coll
 
     static $lst = 'phojure\\Coll::lst';
 
-    static function lst()
+    static function lst(... $xs)
     {
-        if (func_num_args() == 0) return EmptyList::get();
-
-        $args = func_get_args();
-        return PersistentList::ofArray($args);
+        return PersistentList::ofArray($xs);
     }
 
     private static function seqFrom($coll)
@@ -239,8 +236,38 @@ class Coll
         if (!$coll) return null;
         return new UncachedLazySeq(function () use ($f, $coll) {
             return self::cons(
-                $f(self::first($coll)),
+                call_user_func($f, self::first($coll)),
                 self::map($f, self::rest($coll)));
+        });
+    }
+
+    static $filter = 'phojure\\Coll::filter';
+
+    static function filter($pred, $coll)
+    {
+        if(!$coll) return null;
+        return new UncachedLazySeq(function () use($pred, $coll) {
+            if (call_user_func($pred, $coll)) {
+                return self::cons(self::first($coll),
+                    self::filter($pred, self::rest($coll)));
+            }
+
+            return self::filter($pred, self::rest($coll));
+        });
+    }
+
+    static $keep = 'phojure\\Coll::keep';
+
+    static function keep($f, $coll)
+    {
+        if(!$coll) return null;
+        return new UncachedLazySeq(function() use($f, $coll) {
+           $x = call_user_func($f, self::first($coll));
+           if($x !== null){
+               return self::cons(self::first($coll),
+                   self::keep($f, self::rest($coll)));
+           }
+            return self::keep($f, self::rest($coll));
         });
     }
 
@@ -346,12 +373,16 @@ class Coll
 
     static $vector = 'phojure\\Coll::vector';
 
-    static function vector()
+    static function vector(... $xs)
     {
-        if (func_num_args() == 0) return PersistentVector::getEmpty();
+        return self::vec($xs);
+    }
 
-        $args = func_get_args();
-        return self::vec($args);
+    static $transient = self::class . '::transient';
+
+    static function transient($coll)
+    {
+        return $coll->asTransient();
     }
 
 }

@@ -39,7 +39,23 @@ class Val
     static function hash($o)
     {
         if ($o == null) return 0;
-        if ($o instanceof IHashEq) return $o->hasheq();
+        if ($o instanceof IHashEq) return $o->hash();
+        if(is_int($o)) return Murmur3::hashInt($o);
+        if(is_array($o)) return Murmur3::hashOrdered($o);
+        if(is_string($o)) {
+            $hash = 42;
+            $len = strlen($o);
+            for($i = 0; $i < $len; $i++){
+                $hash = intval($o[$i])*31^($hash-$i);
+            }
+            return Murmur3::hashInt($hash);
+        }
+        if(is_float($o)) return Murmur3::hashInt($o);
+        if(is_double($o)) return Murmur3::hashInt($o);
+        if($o instanceof \SplFixedArray) return Murmur3::hashOrdered($o);
+
+        if(is_object($o))
+            return self::hash(spl_object_hash($o));
 
         return 0;
     }
