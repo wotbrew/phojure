@@ -112,6 +112,8 @@ class VectorTest extends \PHPUnit_Framework_TestCase
         $bench = new Benchmark();
         $bench->setCount(10);
 
+        $arr = range(0, 1000);
+        $seq = Coll::seq($arr);
         $bench->add('vector-build-conj', function(){
             $vec = Coll::vector();
             for($i = 0; $i < 1000; $i++){
@@ -125,6 +127,13 @@ class VectorTest extends \PHPUnit_Framework_TestCase
                $vec = Transient::conj($vec, $i);
            }
            $vec = Transient::persistent($vec); 
+        });
+
+        $bench->add('vector-build-from-array', function() use ($arr){
+            $vec = Coll::vec($arr);
+        });
+        $bench->add('vector-build-from-seq', function() use ($seq){
+            $vec = Coll::vec($seq);
         });
 
         $bench->add('array-build-push', function(){
@@ -143,6 +152,7 @@ class VectorTest extends \PHPUnit_Framework_TestCase
         $bench = new Benchmark();
         $bench->setCount(10);
         $arr = range(0, 1000);
+
         $vec = Coll::vec($arr);
         $vect = Coll::transient($vec);
 
@@ -162,6 +172,92 @@ class VectorTest extends \PHPUnit_Framework_TestCase
             for($i = 0; $i < 1000; $i++){
                 Coll::nth($arr, $i);
             }
+        });
+
+        $bench->run();
+    }
+
+    function testBenchNthRandom()
+    {
+
+        $bench = new Benchmark();
+        $bench->setCount(10);
+        $arr = range(0, 1000);
+        shuffle($arr);
+
+        $vec = Coll::vec($arr);
+        $vect = Coll::transient($vec);
+
+        $bench->add('vector-nth-random', function() use ($vec){
+            for($i = 0; $i < 1000; $i++){
+                Coll::nth($vec, $i);
+            }
+        });
+
+        $bench->add('vector-nth-transient-random', function() use ($vect){
+            for($i = 0; $i < 1000; $i++){
+                Coll::nth($vect, $i);
+            }
+        });
+
+        $bench->add('array-nth-random', function() use ($arr){
+            for($i = 0; $i < 1000; $i++){
+                Coll::nth($arr, $i);
+            }
+        });
+
+        $bench->run();
+    }
+
+    function testBenchAdd1000thElement()
+    {
+
+        $bench = new Benchmark();
+        $bench->setCount(1000);
+        $arr = range(0, 1000);
+        shuffle($arr);
+
+        $vec = Coll::vec($arr);
+        $vect = Coll::transient($vec);
+
+        $bench->add('vector-add-1000th', function() use ($vec){
+            $vec = Coll::conj($vec, 'foobar!');
+        });
+
+        $bench->add('vector-transient-add-1000th', function() use ($vect){
+            $vect = Transient::conj($vect, 'foobar!');
+        });
+
+        $bench->add('array-add-1000th', function() use ($arr){
+            $arr2 = $arr;
+            array_push($arr2, 'foobar!');
+        });
+
+        $bench->run();
+    }
+
+    function testBenchAdd10000thElement()
+    {
+
+        $bench = new Benchmark();
+        $bench->setCount(100);
+        $arr = range(0, 10000);
+        shuffle($arr);
+
+        $vec = Coll::vec($arr);
+        $vect = Coll::transient($vec);
+
+        $bench->add('vector-add-10000th', function() use ($vec){
+            $vec = Coll::conj($vec, 'foobar!');
+        });
+
+        $bench->add('vector-transient-add-10000th', function() use ($vect){
+            $vect = Transient::conj($vect, 'foobar!');
+        });
+
+        $bench->add('array-add-10000th', function() use ($arr){
+            $arr2 = $arr;
+            array_push($arr2, 'foobar!');
         });
 
         $bench->run();
