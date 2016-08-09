@@ -372,6 +372,10 @@ class Coll
 
     static function vec($coll)
     {
+        //consider meta if we add it
+        if($coll instanceof IPersistentVector)
+            return $coll;
+
         return LazilyPersistentVector::create($coll);
     }
 
