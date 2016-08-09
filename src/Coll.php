@@ -372,14 +372,14 @@ class Coll
 
     static function vec($coll)
     {
-        return PersistentVector::ofColl($coll);
+        return LazilyPersistentVector::create($coll);
     }
 
     static $vector = 'phojure\\Coll::vector';
 
     static function vector(... $xs)
     {
-        return self::vec($xs);
+        return LazilyPersistentVector::create($xs);
     }
 
     static $nth = self::class . '::nth';

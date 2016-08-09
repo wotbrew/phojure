@@ -26,7 +26,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     private static $NO_EDIT = null;
 
 
-    private static function emptyNode()
+    public static function emptyNode()
     {
         static $node;
         if (!$node) {
@@ -261,6 +261,34 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     {
         if ($coll == null) return self::getEmpty();
         return self::ofSeq(Coll::seq($coll));
+    }
+
+    static function ofReducable(IReduce $coll)
+    {
+        $ret = self::getEmpty()->asTransient();
+        $ret = $coll->reduce(
+            function(ITransientVector $vec, $x) {
+                return $vec->conj($x);
+            }, $ret);
+        return $ret->persistent();
+    }
+
+    static function ofTraversable(\Traversable $coll)
+    {
+        $ret = self::getEmpty()->asTransient();
+        foreach($coll as $x){
+            $ret = $ret->conj($x);
+        }
+        return $ret->persistent();
+    }
+
+    static function ofArray(array $arr)
+    {
+        $ret = self::getEmpty()->asTransient();
+        foreach($arr as $x){
+            $ret = $ret->conj($x);
+        }
+        return $ret->persistent();
     }
 
     function &UNSAFE_getTail()
