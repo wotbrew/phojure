@@ -98,6 +98,14 @@ class VectorTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEquals(Val::hash(Coll::vector()), Val::hash(Coll::vector(1,2,3)));
     }
 
+    function testCompare(){
+        $this->assertTrue(Val::lt(Coll::vector('a'), Coll::vector('b')));
+        $this->assertFalse(Val::gt(Coll::vector('a'), Coll::vector('b')));
+        $this->assertTrue(Val::gt(Coll::vector('z', 'a'), Coll::vector('b')));
+        $this->assertTrue(Val::lt(Coll::vector('z', 'a'), Coll::vector('z', 'b')));
+        $this->assertEquals(0, Val::compare(Coll::vector(1,2,3), Coll::vector(1,2,3)));
+    }
+
     function testBenchBuild()
     {
 

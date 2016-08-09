@@ -60,11 +60,55 @@ class Val
         return 0;
     }
 
-    static $isNil = 'phojure\\Val::isNil';
 
-    public static function isNil($x)
+    static function compare($o1, $o2)
     {
-        return $x === null;
+        if($o1 === $o2)
+            return 0;
+
+        if($o1 !== null){
+
+            if($o2 === null)
+                return 1;
+            if(is_numeric($o1)){
+                if($o1 < $o2){
+                    return -1;
+                }
+                else if($o2 < $o1){
+                    return 1;
+                }
+                return 0;
+            }
+            if(is_string($o1)){
+                if($o1 < $o2){
+                    return -1;
+                }
+                else if($o2 < $o1){
+                    return 1;
+                }
+                return 0;
+            }
+            if($o1 instanceof ICompare)
+                return $o1->compare($o2);
+        }
+        return -1;
+    }
+
+    public static function lt($o1, $o2)
+    {
+        return self::compare($o1, $o2) < 0;
+    }
+    public static function lte($o1, $o2)
+    {
+        return self::compare($o1, $o2) <= 0;
+    }
+    public static function gt($o1, $o2)
+    {
+        return self::compare($o1, $o2) > 0;
+    }
+    public static function gte($o1, $o2)
+    {
+        return self::compare($o1, $o2) >= 0;
     }
 
     static $some = 'phojure\\Val::some';

@@ -6,7 +6,7 @@ namespace phojure;
 
 use Traversable;
 
-abstract class APersistentVector implements IPersistentVector, IHashEq, \IteratorAggregate
+abstract class APersistentVector implements IPersistentVector, IHashEq, ICompare, \IteratorAggregate
 {
     private $hash = -1;
 
@@ -83,6 +83,20 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
         return $this->nth($offset);
     }
 
+    function compare($o)
+    {
+        if ($this->count() < $o->count())
+            return -1;
+        else if ($this->count() > $o->count())
+            return 1;
+        for ($i = 0; $i < $this->count(); $i++) {
+            $c = Val::compare($this->nth($i), $o->nth($i));
+            if ($c != 0)
+                return $c;
+        }
+        return 0;
+    }
+
     public function offsetSet($offset, $value)
     {
         throw new \Exception();
@@ -146,7 +160,6 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, \Iterato
             }
             return $seq === null;
         }
-
 
 
         return false;

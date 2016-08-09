@@ -35,7 +35,7 @@ class LazilyPersistentVector
             return PersistentVector::ofTraversable($coll);
         }
 
-        throw new \Exception('Could not create vector of ' . get_class($coll));
+        return PersistentVector::ofColl($coll);
     }
 
 }
