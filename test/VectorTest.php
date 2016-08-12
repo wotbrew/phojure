@@ -110,7 +110,7 @@ class VectorTest extends \PHPUnit_Framework_TestCase
     {
 
         $bench = new Benchmark();
-        $bench->setCount(10);
+        $bench->setCount(20);
 
         $arr = range(0, 1000);
         $seq = Coll::seq($arr);
@@ -240,6 +240,7 @@ class VectorTest extends \PHPUnit_Framework_TestCase
     {
 
         $bench = new Benchmark();
+
         $bench->setCount(100);
         $arr = range(0, 10000);
         shuffle($arr);

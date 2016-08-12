@@ -4,7 +4,7 @@
 namespace phojure;
 
 
-interface Associative extends ILookup
+interface Associative extends ILookup, IPersistentCollection
 {
     function containsKey($key);
     function entryAt($key);

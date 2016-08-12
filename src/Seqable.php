@@ -11,5 +11,8 @@ namespace phojure;
 
 interface Seqable
 {
+    /**
+     * @return ISeq
+     */
     function seq();
 }
