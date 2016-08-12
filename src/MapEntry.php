@@ -4,7 +4,7 @@
 namespace phojure;
 
 
-class MapEntry
+class MapEntry extends APersistentVector implements IMapEntry
 {
     private $key;
     private $val;
@@ -41,5 +41,41 @@ class MapEntry
         return $this->val;
     }
 
+    function nothing()
+    {
+        return null;
+    }
 
+    function pop()
+    {
+        return LazilyPersistentVector::createOwning([$this->key]);
+    }
+
+    function assocN($i, $val)
+    {
+        return $this->asVector()->assocN($i, $val);
+    }
+
+    private function asVector()
+    {
+        return LazilyPersistentVector::createOwning([$this->key, $this->val]);
+    }
+
+    function cons($val)
+    {
+        return $this->asVector()->cons($val);
+    }
+
+    function nth($i)
+    {
+        if($i == 0) return $this->key;
+        if($i == 1) return $this->val;
+
+        throw new \OutOfBoundsException();
+    }
+
+    public function count()
+    {
+        return 2;
+    }
 }

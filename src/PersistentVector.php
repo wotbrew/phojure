@@ -3,7 +3,7 @@
 
 namespace phojure;
 
-class PersistentVector_Node
+class PersistentVectorNode
 {
     public $array;
     public $edit;
@@ -31,7 +31,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         static $node;
         if (!$node) {
             $arr = array_fill(0, 32, null);
-            $node = new PersistentVector_Node(self::$NO_EDIT, $arr);
+            $node = new PersistentVectorNode(self::$NO_EDIT, $arr);
         }
         return $node;
     }
@@ -49,7 +49,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
     private $count;
     private $shift;
     /**
-     * @var PersistentVector_Node
+     * @var PersistentVectorNode
      */
     private $root;
     /**
@@ -145,7 +145,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         return self::getEmpty();
     }
 
-    private function popTail($level, PersistentVector_Node $node){
+    private function popTail($level, PersistentVectorNode $node){
         $subidx = Util::uRShift($this->count - 2, 0x01f);
         if($level > 5){
           $newchild = $this->popTail($level - 5, $node->array[$subidx]);
@@ -154,7 +154,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
           }
           else {
               $newArr = $node->array;
-              $ret = new PersistentVector_Node($this->root->edit, $newArr);
+              $ret = new PersistentVectorNode($this->root->edit, $newArr);
               $ret->array[$subidx] = $newchild;
               return $ret;
           }
@@ -164,7 +164,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         }
         else {
             $newArr = $this->root->array;
-            $ret = new PersistentVector_Node($this->root->edit, $newArr);
+            $ret = new PersistentVectorNode($this->root->edit, $newArr);
             $ret->array[$subidx] = null;
             return $ret;
         }
@@ -217,7 +217,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
 
     private function doAssoc($level, $node, $i, $val){
         $newArr = $node->array;
-        $ret = new PersistentVector_Node($node->edit, $newArr);
+        $ret = new PersistentVectorNode($node->edit, $newArr);
         if($level == 0){
             $ret->array[$i & 0x01f] = $val;
         }
@@ -319,13 +319,13 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
             return new PersistentVector($count + 1, $shift, $root, $newTail);
         }
         $newroot = null;
-        $tailnode = new PersistentVector_Node($root->edit, $tail);
+        $tailnode = new PersistentVectorNode($root->edit, $tail);
         $newshift = $shift;
         if (Util::uRShift($count, 5) > (1 << $shift)) {
             $newarr = array_fill(0,32,null);
             $newarr[0] = $root;
             $newarr[1] = $this->newPath($root->edit, $shift, $tailnode);
-            $newroot = new PersistentVector_Node($root->edit, $newarr);
+            $newroot = new PersistentVectorNode($root->edit, $newarr);
             $newshift += 5;
         } else {
             $newroot = $this->pushTail($shift, $root, $tail);
@@ -349,7 +349,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
                 $this->newPath($this->root->edit, $level - 5, $tailnode);
         }
         $newarr[$subidx] = $nodeToInsert;
-        $ret = new PersistentVector_Node($parent->edit, $newarr);
+        $ret = new PersistentVectorNode($parent->edit, $newarr);
         return $ret;
     }
 
@@ -358,7 +358,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
         if ($level == 0) return $node;
         $newarr = array_fill(0,32,null);
         $newarr[0] = $this->newPath($edit, $level - 5, $node);
-        $ret = new PersistentVector_Node($edit, $newarr);
+        $ret = new PersistentVectorNode($edit, $newarr);
         return $ret;
     }
 
@@ -395,7 +395,7 @@ class PersistentVector_Transient implements ITransientVector
         static $ctr = 0;
         $ctr++;
         $newRoot = $root->array;
-        return new PersistentVector_Node($ctr, $newRoot);
+        return new PersistentVectorNode($ctr, $newRoot);
     }
 
     static function editableTail($tail)
@@ -416,7 +416,7 @@ class PersistentVector_Transient implements ITransientVector
             return $node;
 
         $newarr = $node->array;
-        return new PersistentVector_Node($this->root->edit, $newarr);
+        return new PersistentVectorNode($this->root->edit, $newarr);
     }
 
     function tailOff()
@@ -451,14 +451,14 @@ class PersistentVector_Transient implements ITransientVector
         }
 
         $newroot = null;
-        $tailnode = new PersistentVector_Node($root->edit, $tail);
+        $tailnode = new PersistentVectorNode($root->edit, $tail);
         $this->tail = array_fill(0, 32, null);
         $tail = &$this->tail;
         $tail[0] = $val;
         $newshift = $this->shift;
         if (Util::uRShift($this->count, 5) > (1 << $this->shift)) {
             $arr = array_fill(0, 32, null);
-            $newroot = new PersistentVector_Node($root->edit, $arr);
+            $newroot = new PersistentVectorNode($root->edit, $arr);
             $newroot->array[0] = $root;
             $newroot->array[1] = $this->newPath($root->edit, $this->shift, $tailnode);
             $newshift += 5;
@@ -510,7 +510,7 @@ class PersistentVector_Transient implements ITransientVector
         if ($level == 0)
             return $node;
         $newarr = array_fill(0, 32, null);
-        $ret = new PersistentVector_Node($edit, $newarr);
+        $ret = new PersistentVectorNode($edit, $newarr);
         $ret->array[0] = $this->newPath($edit, $level - 5, $node);
         return $ret;
     }
@@ -551,7 +551,7 @@ class PersistentVector_Transient implements ITransientVector
         return $this->assocN($key, $val);
     }
 
-    private function popTail($level, PersistentVector_Node $node){
+    private function popTail($level, PersistentVectorNode $node){
         $node = $this->ensureEditableNode($node);
         $subidx = Util::uRShift($this->count - 2, 0x01f);
         if($level > 5){
@@ -596,7 +596,7 @@ class PersistentVector_Transient implements ITransientVector
         $newRoot = $this->popTail($this->shift, $this->root);
         $newShift = $this->shift;
         if($newRoot == null){
-            $newRoot = new PersistentVector_Node($this->root->edit, array_fill(0, 32, null));
+            $newRoot = new PersistentVectorNode($this->root->edit, array_fill(0, 32, null));
         }
         if($this->shift > 5 && $newRoot->array[1] == null){
             $newRoot = $this->ensureEditableNode($newRoot->array[0]);

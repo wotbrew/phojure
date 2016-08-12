@@ -41,7 +41,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, ICompare
     function seq()
     {
         if ($this->count() > 0) {
-            return new APersistentVector_Seq($this, 0);
+            return new APersistentVectorSeq($this, 0);
         }
         return null;
     }
@@ -147,6 +147,25 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, ICompare
             return true;
         }
 
+        if (is_array($a)) {
+
+            if ($a instanceof \Countable) {
+                if (count($a) !== $this->count()) {
+                    return false;
+                }
+            }
+
+            $i = 0;
+            foreach ($a as $x) {
+                $v = $this->nth($i);
+                if (!Val::eq($x, $v)) {
+                    return false;
+                }
+                $i++;
+            }
+            return true;
+        }
+
         if ($a instanceof Sequential) {
             $seq = Coll::seq($a);
             $cnt = $this->count();
@@ -167,7 +186,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, ICompare
 
     public function getIterator()
     {
-        return new APersistentVector_Iterator($this);
+        return new APersistentVectorIterator($this);
     }
 
     function hash()
@@ -185,7 +204,7 @@ abstract class APersistentVector implements IPersistentVector, IHashEq, ICompare
     }
 }
 
-class APersistentVector_Iterator implements \Iterator
+class APersistentVectorIterator implements \Iterator
 {
 
     private $count;
@@ -228,7 +247,7 @@ class APersistentVector_Iterator implements \Iterator
     }
 }
 
-class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce
+class APersistentVectorSeq extends ASeq implements IndexedSeq, IReduce
 {
     /**
      * @var IPersistentVector
@@ -250,7 +269,7 @@ class APersistentVector_Seq extends ASeq implements IndexedSeq, IReduce
     function next()
     {
         if ($this->i + 1 < $this->vec->count()) {
-            return new APersistentVector_Seq($this->vec, $this->i + 1);
+            return new APersistentVectorSeq($this->vec, $this->i + 1);
         }
         return null;
     }

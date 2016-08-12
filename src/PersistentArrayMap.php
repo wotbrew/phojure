@@ -3,6 +3,38 @@
 
 namespace phojure;
 
+class ArrayMapSeq extends ASeq implements \Countable
+{
+    private $array;
+    private $i;
+
+    public function __construct($arr, $i)
+    {
+        $this->array = $arr;
+        $this->i = $i;
+    }
+
+    function count()
+    {
+        return count($this->array) / 2;
+    }
+
+
+    function first()
+    {
+        return MapEntry::create($this->array[$this->i], $this->array[$this->i+1]);
+    }
+
+    function next()
+    {
+        if($this->i + 2 < count($this->array)){
+            return new ArrayMapSeq($this->array, $this->i + 2);
+        }
+
+        return null;
+    }
+}
+
 class PersistentArrayMap extends APersistentMap implements IEditableCollection, IKVReduce
 {
 
@@ -241,6 +273,6 @@ class PersistentArrayMap extends APersistentMap implements IEditableCollection, 
 
     function seq()
     {
-        // TODO: Implement seq() method.
+        return new ArrayMapSeq($this->array, 0);
     }
 }

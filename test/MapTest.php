@@ -22,5 +22,8 @@ class MapTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals([1, 2, 3, 4], $map2->valAt($map));
+        $this->assertTrue(
+            Val::eq([[1, 2], [3, 4]], 
+            Coll::seq(PersistentArrayMap::create(1,2,3,4))));
     }
 }
