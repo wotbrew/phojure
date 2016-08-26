@@ -35,7 +35,7 @@ class ArrayMapSeq extends ASeq implements \Countable
     }
 }
 
-class PersistentArrayMap extends APersistentMap implements IEditableCollection, IKVReduce
+class PersistentArrayMap extends APersistentMap implements IEditableCollection, IKVReduce, IMapIterable
 {
 
     private $array;
@@ -183,12 +183,31 @@ class PersistentArrayMap extends APersistentMap implements IEditableCollection, 
 
     function getIterator()
     {
-        // TODO: Implement getIterator() method.
+        $len = count($this->array);
+        for($i = 0; $i < $len; $i+=2) {
+            yield MapEntry::create($this->array[$i], $this->array[$i+1]);
+        }
+    }
+
+    function keyIterator()
+    {
+        $len = count($this->array);
+        for($i = 0; $i < $len; $i+=2) {
+            yield $this->array[$i];
+        }
+    }
+
+    function valIterator()
+    {
+        $len = count($this->array);
+        for($i = 0; $i < $len; $i+=2) {
+            yield $this->array[$i+1];
+        }
     }
 
     function asTransient()
     {
-        // TODO: Implement asTransient() method.
+        return new TransientArrayMap($this->array);
     }
 
     function reduceKV($f, $init)
@@ -223,7 +242,7 @@ class PersistentArrayMap extends APersistentMap implements IEditableCollection, 
 
     static function createHT($array)
     {
-        return null;
+        return PersistentHashMap::ofSequentialArray($array);
     }
 
 
@@ -274,5 +293,97 @@ class PersistentArrayMap extends APersistentMap implements IEditableCollection, 
     function seq()
     {
         return new ArrayMapSeq($this->array, 0);
+    }
+
+}
+
+class TransientArrayMap extends ATransientMap
+{
+    private $len;
+    private $array;
+    private $owner;
+
+    public function __construct($array)
+    {
+        $newArray = $array;
+        $this->array = $newArray;
+        $this->len = count($array);
+        $this->owner = true;
+    }
+
+    function ensureEditable()
+    {
+        if(!$this->owner){
+            throw new \Exception("Transient used after persistent call");
+        }
+    }
+
+    function equalKey($key1, $key2)
+    {
+        if($key1 instanceof Keyword)
+            return $key1 === $key2;
+
+        return Val::eq($key1, $key2);
+    }
+
+    function indexOf($key)
+    {
+        for($i = 0; $i < $this->len; $i+=2){
+            if($this->equalKey($key, $this->array[$i])){
+                return $i;
+            }
+        }
+        return -1;
+    }
+
+    function doAssoc($key, $val)
+    {
+        $i = $this->indexOf($key);
+        if($i >= 0){
+            if($this->array[$i + 1] !== $val){
+                $this->array[$i + 1] = $val;
+            }
+        }
+        else {
+            if($this->len >= count($this->array)){
+                return PersistentHashMap::ofSequentialArray($this->array)->asTransient()->assoc($key, $val);
+            }
+        }
+        return $this;
+    }
+
+    function doWithout($key)
+    {
+        $i = $this->indexOf($key);
+        if($i >= 0){
+            if($this->len >= 2){
+                $this->array[$i] = $this->array[$this->len - 2];
+                $this->array[$i+1] = $this->array[$this->len - 1];
+            }
+            $this->len -= 2;
+        }
+        return $this;
+    }
+
+    function doValAt($key, $notFound)
+    {
+        $i = $this->indexOf($key);
+        if($i >= 0){
+            return $this->array[$i+1];
+        }
+        return $notFound;
+    }
+
+    function doCount()
+    {
+        return $this->len / 2;
+    }
+
+    function doPersistent()
+    {
+        $this->ensureEditable();
+        $this->owner = null;
+        $newArray = $this->array;
+        return new PersistentArrayMap($newArray);
     }
 }

@@ -62,4 +62,10 @@ abstract class APersistentMap implements IPersistentMap, IHashEq
         return $ret;
     }
 
+    function __invoke($key, $notFound = null)
+    {
+        return $this->valAtOr($key, $notFound);
+    }
+
+
 }

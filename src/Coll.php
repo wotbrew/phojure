@@ -116,6 +116,13 @@ class Coll
         }
         return null;
     }
+    
+    static $second = self::class . '::second';
+    
+    static function second($coll)
+    {
+        return self::first(self::rest($coll));
+    }
 
     static $rest = 'phojure\\Coll::rest';
 

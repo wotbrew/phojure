@@ -105,7 +105,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
 
     function asTransient()
     {
-        return PersistentVector_Transient::ofPersistentVector($this);
+        return TransientVector::ofPersistentVector($this);
     }
 
     function reduce($f, $init)
@@ -365,7 +365,7 @@ class PersistentVector extends APersistentVector implements IEditableCollection,
 }
 
 
-class PersistentVector_Transient implements ITransientVector
+class TransientVector implements ITransientVector
 {
     private $count;
     private $shift;
@@ -384,7 +384,7 @@ class PersistentVector_Transient implements ITransientVector
     {
         $tail = self::editableTail($vec->UNSAFE_getTail());
 
-        return new PersistentVector_Transient($vec->count(),
+        return new TransientVector($vec->count(),
             $vec->UNSAFE_getShift(),
             self::editableRoot($vec->UNSAFE_getRoot()),
             $tail);

@@ -25,5 +25,25 @@ class Util
             $b[$i + $boffset] = $a[$aoffset + $i];
         }
     }
-    
+
+    static $arrayCopy = "phojure\\Util::arrayCopy";
+
+    static function arrayCopy(array &$a, int $aoffset, array &$b, int $boffset, int $length)
+    {
+        for ($i = 0; $i < $length; $i++) {
+            $b[$i + $boffset] = $a[$aoffset + $i];
+        }
+    }
+
+
+    static function bitCount($i)
+    {
+        $i = $i - (Util::uRShift($i,1) & 0x55555555);
+        $i = ($i & 0x33333333) + (Util::uRShift($i, 2) & 0x33333333);
+        $i = ($i + Util::uRShift($i, 4)) & 0x0f0f0f0f;
+        $i = $i + Util::uRShift($i, 8);
+        $i = $i + Util::uRShift($i, 16);
+        return $i & 0x3f;
+    }
+
 }
