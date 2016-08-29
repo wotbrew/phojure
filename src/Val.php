@@ -36,7 +36,7 @@ class Val
 
     static $hash = "phojure\\Val::hash";
 
-    static function hash($o)
+    private static function _hash($o)
     {
         if ($o === null) return 0;
         if ($o instanceof IHashEq) return $o->hash();
@@ -55,9 +55,14 @@ class Val
         if($o instanceof \SplFixedArray) return Murmur3::hashOrdered($o);
 
         if(is_object($o))
-            return self::hash(spl_object_hash($o));
+            return self::_hash(spl_object_hash($o));
 
         return 0;
+    }
+
+    public static function hash($o)
+    {
+        return self::_hash($o) & (0x7fffffff-1);
     }
 
 

@@ -396,7 +396,7 @@ class PersistentHashMapBitmapNode implements IPersistentHashMapNode
         $bit = PersistentHashMap::bitpos($hash, $shift);
         $idx = $this->index($bit);
 
-        if (($this->bitmap & $bit) != 0) {
+        if (($this->bitmap & $bit) !== 0) {
             $keyOrNull = $this->array[2 * $idx];
             $valOrNode = $this->array[2 * $idx + 1];
             if ($keyOrNull === null) {
@@ -533,7 +533,7 @@ class PersistentHashMapBitmapNode implements IPersistentHashMapNode
             if ($keyOrNull !== null) {
                 yield call_user_func($f, $keyOrNull, $valOrNode);
             } elseif ($valOrNode !== null) {
-                foreach ($valOrNode as $entry) {
+                foreach ($valOrNode->iterator($f) as $entry) {
                     yield $entry;
                 }
             }
@@ -620,40 +620,41 @@ class PersistentHashMapBitmapNode implements IPersistentHashMapNode
                 $editable->bitmap |= $bit;
                 return $editable;
             }
-        }
-        if ($n >= 16) {
-            $node = array_fill(0, 32, null);
-            $jdx = PersistentHashMap::mask($hash, $shift);
-            $nodes[$jdx] = self::getEmpty()->assocT($edit, $shift + 5, $hash, $key, $val, $addedLeaf);
-            $j = 0;
-            for ($i = 0; $i < 32; $i++) {
-                if ((Util::uRShift($this->bitmap, $i) & 1) !== 0) {
-                    if ($this->array[$j] === null) {
-                        $nodes[$i] = $this->array[$j + 1];
-                    } else {
-                        $nodes[$i] = self::getEmpty()->assocT($edit,
-                            $shift + 5,
-                            Val::hash($this->array[$j]),
-                            $this->array[$j],
-                            $this->array[$j + 1],
-                            $addedLeaf);
-                    }
-                    $j += 2;
-                }
-            }
-            return new PersistentHashMapArrayNode($edit, $n + 1, $nodes);
-        } else {
-            $newArr = array_fill(0, 2 * ($n + 4), null);
-            Util::arrayCopy($this->array, 0, $newArr, 0, 2 * $idx);
-            $newArr[2 * $idx] = $key;
-            $newArr[2 * $idx + 1] = $val;
-            $addedLeaf->val = $addedLeaf;
 
-            Util::arrayCopy($this->array, 2 * $idx, $newArr, 2 * ($idx + 1), 2 * ($n - $idx));
-            $editable = $this->ensureEditable($edit);
-            $editable->array = $newArr;
-            $editable->bitmap |= $bit;
-            return $editable;
+            if ($n >= 16) {
+                $nodes = array_fill(0, 32, null);
+                $jdx = PersistentHashMap::mask($hash, $shift);
+                $nodes[$jdx] = self::getEmpty()->assocT($edit, $shift + 5, $hash, $key, $val, $addedLeaf);
+                $j = 0;
+                for ($i = 0; $i < 32; $i++) {
+                    if ((Util::uRShift($this->bitmap, $i) & 1) !== 0) {
+                        if ($this->array[$j] === null) {
+                            $nodes[$i] = $this->array[$j + 1];
+                        } else {
+                            $nodes[$i] = self::getEmpty()->assocT($edit,
+                                $shift + 5,
+                                Val::hash($this->array[$j]),
+                                $this->array[$j],
+                                $this->array[$j + 1],
+                                $addedLeaf);
+                        }
+                        $j += 2;
+                    }
+                }
+                return new PersistentHashMapArrayNode($edit, $n + 1, $nodes);
+            } else {
+                $newArr = array_fill(0, 2 * ($n + 4), null);
+                Util::arrayCopy($this->array, 0, $newArr, 0, 2 * $idx);
+                $newArr[2 * $idx] = $key;
+                $newArr[2 * $idx + 1] = $val;
+                $addedLeaf->val = $addedLeaf;
+
+                Util::arrayCopy($this->array, 2 * $idx, $newArr, 2 * ($idx + 1), 2 * ($n - $idx));
+                $editable = $this->ensureEditable($edit);
+                $editable->array = $newArr;
+                $editable->bitmap |= $bit;
+                return $editable;
+            }
         }
     }
 
@@ -910,23 +911,20 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
 
     static function create(... $items)
     {
-        $ret = self::getEmpty();
-        for ($i = 0; $i < count($items); $i += 2) {
-            $ret = $ret->assoc($items[$i], $items[$i + 1]);
-        }
-        return $ret;
-
-        // return self::ofSequentialArray($items);
+        return self::ofSequentialArray($items);
     }
 
     static function mask($hash, $shift)
     {
-        return Util::uRShift($hash, $shift) & 0x01f;
+        $ret = (Util::uRShift($hash, $shift) & 31);
+        return $ret;
     }
 
     static function bitpos($hash, $shift)
     {
-        return 1 << self::mask($hash, $shift);
+        $mask = self::mask($hash, $shift);
+        $ret = (1 << $mask);
+        return $ret;
     }
 
     static function removePair(array $arr, $i)
@@ -1034,11 +1032,11 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
         return $ret->persistent();
     }
 
-    static function ofIterable($map)
+    static function ofEntryTraversable($map)
     {
         $ret = self::getEmpty()->asTransient();
-        foreach ($map as $key => $val) {
-            $ret = $ret->assoc($key, $val);
+        foreach ($map as $e) {
+            $ret = $ret->assoc($e->key(), $e->val());
         }
         return $ret->persistent();
     }
@@ -1058,7 +1056,7 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
             return $this->hasNull;
         }
         if ($this->root !== null) {
-            return $this->root->find(0, Val::hash($key), $key, $this->notFound) != $this->notFound;
+            return $this->root->find(0, Val::hash($key), $key, $this->notFound) !== $this->notFound;
         }
         return false;
     }
@@ -1111,7 +1109,7 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
 
     function asTransient()
     {
-        return new TransientHashMap($this->root, $this->count, $this->hasNull, $this->nullValue);
+        return new TransientHashMap(new Box(42), $this->root, $this->count, $this->hasNull, $this->nullValue);
     }
 
     function reduceKV($f, $init)
@@ -1197,7 +1195,7 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
 
     public function count()
     {
-        return $this->count();
+        return $this->count;
     }
 
     function seq()
@@ -1214,41 +1212,114 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
 
 class TransientHashMap extends ATransientMap
 {
+    private $edit;
+    /**
+     * @var IPersistentHashMapNode
+     */
+    private $root;
+    private $count;
+    private $hasNull;
+    private $nullValue;
+
+    private $leafFlag;
+
     /**
      * TransientHashMap constructor.
      */
-    public function __construct($node, $count, $hasNull, $nullValue)
+    public function __construct($edit, $node, $count, $hasNull, $nullValue)
     {
-
+        $this->leafFlag = new Box(null);
+        $this->edit = $edit;
+        $this->root = $node;
+        $this->count = $count;
+        $this->hasNull = $hasNull;
+        $this->nullValue = $nullValue;
     }
 
     function ensureEditable()
     {
-        // TODO: Implement ensureEditable() method.
+        if($this->edit->val === null){
+            throw new \Exception('Transient used after persistent call');
+        }
     }
 
     function doAssoc($key, $val)
     {
-        // TODO: Implement doAssoc() method.
+        if($key === null){
+            if($this->nullValue !== $val){
+                $this->nullValue = $val;
+            }
+            if(!$this->hasNull){
+                $this->count++;
+                $this->hasNull = true;
+            }
+            return $this;
+        }
+        else {
+            $this->leafFlag->val = null;
+            $n = $this->root ?: PersistentHashMapBitmapNode::getEmpty();
+            $n = $n->assocT($this->edit, 0, Val::hash($key), $key, $val, $this->leafFlag);
+            if($n !== $this->root){
+                $this->root = $n;
+            }
+            if($this->leafFlag->val !== null){
+                $this->count++;
+            }
+            return $this;
+        }
     }
 
     function doWithout($key)
     {
-        // TODO: Implement doWithout() method.
+        if($key === null){
+            if(!$this->hasNull){
+                return $this;
+            }
+            else {
+                $this->hasNull = false;
+                $this->nullValue = null;
+                $this->count--;
+                return $this;
+            }
+        }
+        elseif ($this->root === null){
+            return $this;
+        }
+        else {
+            $this->leafFlag->val = null;
+            $n = $this->root->withoutT($this->edit, 0, Val::hash($key), $key, $this->leafFlag);
+            if($n !== $this->root){
+                $this->root = $n;
+            }
+            if($this->leafFlag->val !== null){
+                $this->count--;
+            }
+            return $this;
+        }
     }
 
     function doValAt($key, $notFound)
     {
-        // TODO: Implement doValAt() method.
+        if($key === null){
+            if($this->hasNull){
+                return $this->nullValue;
+            }
+            return $notFound;
+        }
+        if($this->root !== null){
+            return $this->root->find(0, Val::hash($key), $key, $notFound);
+        }
+        return $notFound;
     }
 
     function doCount()
     {
-        // TODO: Implement doCount() method.
+        return $this->count;
     }
 
     function doPersistent()
     {
-        // TODO: Implement doPersistent() method.
+        $this->edit->val = null;
+        return new PersistentHashMap($this->count, $this->root, $this->hasNull, $this->nullValue);
     }
 }

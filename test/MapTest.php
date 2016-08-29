@@ -6,6 +6,11 @@ namespace phojure;
 
 class MapTest extends \PHPUnit_Framework_TestCase
 {
+    function testMask()
+    {
+        var_dump(PersistentHashMap::bitpos(-324234423, 0));
+    }
+
     function testSmallMap()
     {
         $map = PersistentArrayMap::create(
@@ -22,6 +27,12 @@ class MapTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals([1, 2, 3, 4], $map2->valAt($map));
+
+        $map3 = $map2->assoc('foo', 2);
+        $this->assertEquals([1, 2, 3, 4], $map2->valAt($map));
+        $this->assertEquals(2, $map3->valAt('foo'));
+
+        $this->assertTrue(Val::eq($map, PersistentArrayMap::ofEntryTraversable($map)));
     }
 
     function testBigMap()
@@ -41,6 +52,10 @@ class MapTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals([1, 2, 3, 4], $map2->valAt($map));
 
-        Coll::seq($map);
+        $map3 = $map2->assoc('foo', 2);
+        $this->assertEquals([1, 2, 3, 4], $map2->valAt($map));
+        $this->assertEquals(2, $map3->valAt('foo'));
+
+        $this->assertTrue(Val::eq($map, PersistentHashMap::ofEntryTraversable($map)));
     }
 }

@@ -59,12 +59,11 @@ class PersistentArrayMap extends APersistentMap implements IEditableCollection, 
         return $empty;
     }
 
-
-    static function ofMap($map)
+    static function ofEntryTraversable($map)
     {
         $ret = self::getEmpty()->asTransient();
-        foreach ($map as $k => $v) {
-            $ret = $ret->assoc($k, $v);
+        foreach ($map as $e) {
+            $ret = $ret->assoc($e->key(), $e->val());
         }
         return $ret->persistent();
     }
@@ -308,12 +307,12 @@ class TransientArrayMap extends ATransientMap
         $newArray = $array;
         $this->array = $newArray;
         $this->len = count($array);
-        $this->owner = true;
+        $this->owner = new EmptyBox();
     }
 
     function ensureEditable()
     {
-        if(!$this->owner){
+        if($this->owner === null){
             throw new \Exception("Transient used after persistent call");
         }
     }

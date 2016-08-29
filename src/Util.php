@@ -30,8 +30,16 @@ class Util
 
     static function arrayCopy(array &$a, int $aoffset, array &$b, int $boffset, int $length)
     {
-        for ($i = 0; $i < $length; $i++) {
-            $b[$i + $boffset] = $a[$aoffset + $i];
+        if($a === $b){
+            $tmp = array_slice($a, $aoffset, $length);
+            for ($i = 0; $i < $length; $i++) {
+                $b[$i + $boffset] = $tmp[$i];
+            }
+        }
+        else {
+            for ($i = 0; $i < $length; $i++) {
+                $b[$i + $boffset] = $a[$aoffset + $i];
+            }
         }
     }
 
