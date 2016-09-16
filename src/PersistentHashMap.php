@@ -916,15 +916,12 @@ class PersistentHashMap extends APersistentMap implements IEditableCollection, I
 
     static function mask($hash, $shift)
     {
-        $ret = (Util::uRShift($hash, $shift) & 31);
-        return $ret;
+        return Util::uRShift($hash, $shift) & 31;
     }
 
     static function bitpos($hash, $shift)
     {
-        $mask = self::mask($hash, $shift);
-        $ret = (1 << $mask);
-        return $ret;
+        return (1 << self::mask($hash, $shift));
     }
 
     static function removePair(array $arr, $i)

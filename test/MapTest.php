@@ -4,13 +4,10 @@
 namespace phojure;
 
 
+use Lavoiesl\PhpBenchmark\Benchmark;
+
 class MapTest extends \PHPUnit_Framework_TestCase
 {
-    function testMask()
-    {
-        var_dump(PersistentHashMap::bitpos(-324234423, 0));
-    }
-
     function testSmallMap()
     {
         $map = PersistentArrayMap::create(
@@ -43,8 +40,11 @@ class MapTest extends \PHPUnit_Framework_TestCase
             'qux', [3, 4, 5, 6]
         );
 
-        $this->assertEquals('foo', $map->valAt([1, 2]));
-        $this->assertEquals('bar', $map->valAt(Coll::vector('foo', 1, 2)));
+        $this->assertEquals('foo', Map::get($map, [1, 2]));
+        $this->assertEquals('bar', Map::get($map, Coll::vector('foo', 1, 2)));
+
+        $this->assertEquals('foo', $map([1, 2]), "Map is a function");
+        $this->assertEquals('bar', $map(Coll::vector('foo', 1, 2)), "Map is a function");
 
         $map2 = PersistentHashMap::create(
             $map, [1, 2, 3, 4]
@@ -57,5 +57,6 @@ class MapTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $map3->valAt('foo'));
 
         $this->assertTrue(Val::eq($map, PersistentHashMap::ofEntryTraversable($map)));
+
     }
 }

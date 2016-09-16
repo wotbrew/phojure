@@ -77,5 +77,4 @@ abstract class ATransientMap implements ITransientMap
         return $this->doCount();
     }
 
-
 }
