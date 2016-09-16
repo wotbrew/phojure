@@ -77,4 +77,25 @@ abstract class ATransientMap implements ITransientMap
         return $this->doCount();
     }
 
+
+    public function offsetExists($offset)
+    {
+        return $this->containsKey($offset);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->valAt($offset);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        return $this->assoc($offset, $value);
+    }
+
+    public function offsetUnset($offset)
+    {
+        return $this->without($offset);
+    }
+
 }

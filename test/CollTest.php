@@ -36,8 +36,8 @@ class CollTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(2,
             Val::threadl([1, 2, 3])
-                ->pipe(Coll::$map, function($x){return $x + 1;})
-                ->pipe(Coll::$first)
+                ->_(Coll::$map, function($x){return $x + 1;})
+                ->_(Coll::$first)
                 ->deref());
     }
 

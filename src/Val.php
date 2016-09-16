@@ -4,21 +4,35 @@ namespace phojure;
 
 class Val
 {
-    static $threadf = 'phojure\\Val::threadf';
+    static $not = self::class . '::not';
+
+    static function not($x)
+    {
+        return $x === false || $x === null;
+    }
+    
+    static $isTruthy = self::class . '::isTruthy';
+
+    static function isTruthy($x)
+    {
+        return $x !== false || $x !== null;
+    }
+
+    static $threadf = self::class . '::threadf';
 
     static function threadf($x)
     {
         return new ThreadFirst($x);
     }
 
-    static $threadl = 'phojure\\Val::threadl';
+    static $threadl = self::class . '::threadl';
 
     static function threadl($x)
     {
         return new ThreadLast($x);
     }
 
-    static $eq = "phojure\\Val::eq";
+    static $eq = self::class . '::eq';
 
     static function eq($a, $b)
     {
@@ -33,8 +47,6 @@ class Val
 
         return false;
     }
-
-    static $hash = "phojure\\Val::hash";
 
     private static function _hash($o)
     {
@@ -59,6 +71,8 @@ class Val
 
         return 0;
     }
+
+    static $hash = self::class . '::hash';
 
     public static function hash($o)
     {
@@ -99,24 +113,33 @@ class Val
         return -1;
     }
 
+    static $lt = self::class . '::lt';
     public static function lt($o1, $o2)
     {
         return self::compare($o1, $o2) < 0;
     }
+    
+    static $lte = self::class . '::lte';
+    
     public static function lte($o1, $o2)
     {
         return self::compare($o1, $o2) <= 0;
     }
+    
+    static $gt = self::class . '::gt';
+    
     public static function gt($o1, $o2)
     {
         return self::compare($o1, $o2) > 0;
     }
+    
+    static $gte = self::class . '::gte';
     public static function gte($o1, $o2)
     {
         return self::compare($o1, $o2) >= 0;
     }
 
-    static $some = 'phojure\\Val::some';
+    static $some = self::class . '::some';
 
     public static function some($x)
     {

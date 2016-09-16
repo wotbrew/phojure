@@ -59,4 +59,23 @@ class MapTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Val::eq($map, PersistentHashMap::ofEntryTraversable($map)));
 
     }
+
+    function testRandomStuff()
+    {
+        $m = Map::of(
+          'foo', 'bar',
+          'baz', 'wut',
+          [1,2], Map::of(
+           'hello', Map::of('world', true)
+          )
+        );
+
+        $this->assertTrue(Map::getIn($m, [[1, 2], 'hello', 'world']));
+
+        $this->assertFalse(Val::threadf($m)
+            ->_(Map::$assocIn, [[1, 2], "hello", "tester"], false)
+            ->_(Map::$getIn, [[1, 2], "hello", "tester"])
+            ->deref()
+        );
+    }
 }

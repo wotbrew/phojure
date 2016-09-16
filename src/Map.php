@@ -8,6 +8,22 @@ class Map
 {
     static $contains = self::class . '::contains';
 
+    static function contains($m, $k){
+        if($m === null) return false;
+
+        if($m instanceof Associative){
+            return $m->containsKey($k);
+        }
+        if($m instanceof \ArrayAccess){
+            return $m->offsetExists($k);
+        }
+        if(is_array($m)){
+            return array_key_exists($k, $m);
+        }
+
+        return false;
+    }
+
     static $get = self::class . '::get';
 
     static function get($m, $k, $notFound = null)
@@ -40,7 +56,7 @@ class Map
             for($i = 0; $i < $c; $i++){
                 $k = $ks[$i];
                 if($i == $c - 1) {
-                    return self::get($m, $k, $notFound);
+                    return self::get($ret, $k, $notFound);
                 }
                 $ret = self::get($ret, $k);
             }
@@ -73,8 +89,16 @@ class Map
 
     static $assoc = self::class . '::assoc';
 
-    static function assoc($m, $k, $v)
+    static function assoc($m, $k, $v, ... $kvs)
     {
+        if($kvs){
+            $m = self::assoc($m, $k, $v);
+            for($i = 0; $i < count($kvs); $i+=2){
+                $m = self::assoc($m, $kvs[$i], $kvs[$i+1]);
+            }
+            return $m;
+        }
+
         if($m instanceof Associative){
             return $m->assoc($k, $v);
         }
@@ -93,13 +117,40 @@ class Map
 
     static function assocIn($m, $ks, $v)
     {
-        //todo impl
+        if(is_array($ks)){
+            if(!$ks) return $m;
+
+            $f = function ($f, $m, $i) use ($v, $ks) {
+                if($i+1 < count($ks)){
+                    $k = $ks[$i];
+                    $x = self::get($m, $k);
+                    return self::assoc($m, $k, $f($f, $x, $i+1));
+                }
+                return self::assoc($m, $ks[$i], $v);
+            };
+            return $f($f, $m, 0);
+        }
+        $k = Coll::first($ks);
+        $rst = Coll::rest($ks);
+        if($rst){
+            $x = self::get($m, $k);
+            return self::assoc($m, $k, self::assocIn($x, $rst, $v));
+        }
+        return self::assoc($m, $k, $v);
     }
 
     static $dissoc = self::class . '::dissoc';
 
-    static function dissoc($m, $k)
+    static function dissoc($m, $k, ... $ks)
     {
+        if($ks){
+            $m = self::dissoc($m, $k);
+            foreach($ks as $k){
+                $m = self::dissoc($m, $k);
+            }
+            return $m;
+        }
+
         if($m instanceof IPersistentMap){
             return $m->without($k);
         }
@@ -110,6 +161,7 @@ class Map
             }
             return $m;
         }
+
         return $m;
     }
 
@@ -117,7 +169,35 @@ class Map
 
     static function dissocIn($m, $ks)
     {
-        //todo impl
+        if(is_array($ks)){
+            if(!$ks) return $m;
+
+            $f = function ($f, $m, $i) use ($ks) {
+                if($i < count($ks)){
+                    $k = $ks[$i];
+                    $x = self::get($m, $k);
+                    $v = $f($f, $x, $i+1);
+                    if(Coll::isEmpty($v)){
+                        return self::dissoc($m, $k);
+                    }
+                    return self::assoc($m, $k, $v);
+                }
+                return self::dissoc($m, $ks[$i]);
+            };
+            return $f($f, $m, 0);
+        }
+
+        $k = Coll::first($ks);
+        $rst = Coll::rest($ks);
+        if($rst){
+            $x = self::get($m, $k);
+            $v = self::dissocIn($x, $k);
+            if(Coll::isEmpty($v)){
+                return self::dissoc($m, $k);
+            }
+            return self::assoc($m, $k, $v);
+        }
+        return $m;
     }
 
     static $of = self::class . '::of';
@@ -128,5 +208,4 @@ class Map
         }
         return PersistentHashMap::ofSequentialArray($kvs);
     }
-
 }

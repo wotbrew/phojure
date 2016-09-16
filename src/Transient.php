@@ -12,6 +12,18 @@ class Transient
         return $coll->conj($x);
     }
 
+    static $assoc = self::class . '::assoc';
+    static function assoc(ITransientMap $m, $k, $v)
+    {
+        return $m->assoc($k, $v);
+    }
+
+    static $dissoc = self::class . '::dissoc';
+    static function dissoc(ITransientMap $m, $k)
+    {
+        return $m->without($k);
+    }
+
     static $persistent = self::class . '::persistent';
     static function persistent(ITransientCollection $coll)
     {

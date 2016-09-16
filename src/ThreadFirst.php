@@ -16,10 +16,9 @@ class ThreadFirst implements IDeref
         $this->val = $val;
     }
 
-    function pipe($name, ... $arguments)
+    function _($f, ... $arguments)
     {
-        array_unshift($arguments, $this->val);
-        return new ThreadFirst(call_user_func_array($name, $arguments));
+        return new ThreadFirst(Fn::apply($f, $this->val, $arguments));
     }
     
     function deref()

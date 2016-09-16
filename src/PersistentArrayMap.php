@@ -334,6 +334,11 @@ class TransientArrayMap extends ATransientMap
         }
         return -1;
     }
+    
+    function containsKey($key)
+    {
+        return $this->indexOf($key) !== -1;
+    }
 
     function doAssoc($key, $val)
     {

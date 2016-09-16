@@ -6,7 +6,7 @@ namespace phojure;
 
 use Traversable;
 
-abstract class APersistentMap implements IPersistentMap, IHashEq
+abstract class APersistentMap implements IPersistentMap, IHashEq, \ArrayAccess
 {
 
     private $hash = -1;
@@ -68,4 +68,23 @@ abstract class APersistentMap implements IPersistentMap, IHashEq
     }
 
 
+    public function offsetExists($offset)
+    {
+        return $this->containsKey($offset);
+    }
+
+    public function offsetGet($offset)
+    {
+        return $this->valAt($offset);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        throw new \Exception('Cannot set offset of persistent map');
+    }
+
+    public function offsetUnset($offset)
+    {
+        throw new \Exception('Cannot unset offset of persistent map');
+    }
 }

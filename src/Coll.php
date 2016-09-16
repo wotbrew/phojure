@@ -6,7 +6,7 @@ namespace phojure;
 
 class Coll
 {
-    static $cons = 'phojure\\Coll::cons';
+    static $cons = self::class . '::cons';
 
     static function cons($x, $coll)
     {
@@ -19,7 +19,7 @@ class Coll
         }
     }
 
-    static $conj = 'phojure\\Coll::conj';
+    static $conj = self::class . '::conj';
 
     static function conj($coll, $x)
     {
@@ -29,7 +29,7 @@ class Coll
         return $coll->cons($x);
     }
 
-    static $lst = 'phojure\\Coll::lst';
+    static $lst = self::class . '::lst';
 
     static function lst(... $xs)
     {
@@ -56,7 +56,7 @@ class Coll
         throw new \Exception("Cannot find seq");
     }
 
-    static $seq = 'phojure\\Coll::seq';
+    static $seq = self::class . '::seq';
 
     static function seq($coll)
     {
@@ -67,7 +67,14 @@ class Coll
         return self::seqFrom($coll);
     }
 
-    static $first = 'phojure\\Coll::first';
+    static $isEmpty = self::class . '::isEmpty';
+
+    static function isEmpty($coll)
+    {
+        return self::seq($coll) === null;
+    }
+
+    static $first = self::class . '::first';
 
     static function first($coll)
     {
@@ -78,35 +85,35 @@ class Coll
         return null;
     }
 
-    static $ffirst = 'phojure\\Coll::ffirst';
+    static $ffirst = self::class . '::ffirst';
 
     static function ffirst($coll)
     {
         return self::first(self::first($coll));
     }
 
-    static $nfirst = 'phojure\\Coll::nfirst';
+    static $nfirst = self::class . '::nfirst';
 
     static function nfirst($coll)
     {
         return self::next(self::first($coll));
     }
 
-    static $nnext = 'phojure\\Coll::nnext';
+    static $nnext = self::class . '::nnext';
 
     static function nnext($coll)
     {
         return self::next(self::next($coll));
     }
 
-    static $fnext = 'phojure\\Coll::fnext';
+    static $fnext = self::class . '::fnext';
 
     static function fnext($coll)
     {
         return self::first(self::next($coll));
     }
 
-    static $next = 'phojure\\Coll::next';
+    static $next = self::class . '::next';
 
     static function next($coll)
     {
@@ -124,7 +131,7 @@ class Coll
         return self::first(self::rest($coll));
     }
 
-    static $rest = 'phojure\\Coll::rest';
+    static $rest = self::class . '::rest';
 
     static function rest($coll)
     {
@@ -135,7 +142,7 @@ class Coll
         return null;
     }
 
-    static $isSeq = 'phojure\\Coll::is_seq';
+    static $isSeq = self::class . '::is_seq';
 
     static function isSeq($coll)
     {
@@ -148,7 +155,7 @@ class Coll
     }
 
 
-    static $last = 'phojure\\Coll::last';
+    static $last = self::class . '::last';
 
     static function last($coll)
     {
@@ -163,7 +170,7 @@ class Coll
         return null;
     }
 
-    static $seqIterator = 'phojure\\Coll::seq_iterator';
+    static $seqIterator = self::class . '::seq_iterator';
 
     static function seqIterator($coll)
     {
@@ -183,21 +190,21 @@ class Coll
         return $val;
     }
 
-    static $peek = 'phojure\\Coll::peek';
+    static $peek = self::class . '::peek';
 
     static function peek($coll)
     {
         return $coll->peek();
     }
 
-    static $pop = 'phojure\\Coll::pop';
+    static $pop = self::class . '::pop';
 
     static function pop($coll)
     {
         return $coll->pop();
     }
 
-    static $reduce = 'phojure\\Coll:reduce';
+    static $reduce = self::class . ':reduce';
 
     static function reduce($f, $init, $coll)
     {
@@ -207,7 +214,7 @@ class Coll
         return self::naive_seq_reduce($coll, $f, $init);
     }
 
-    static $reduceKv = 'phojure\\Coll:reduce_kv';
+    static $reduceKv = self::class . ':reduce_kv';
 
     static function reduceKv($f, $init, $coll)
     {
@@ -227,7 +234,7 @@ class Coll
         return $val;
     }
 
-    static $run = 'phojure\\Coll::run';
+    static $run = self::class . '::run';
 
     static function run($f, $coll)
     {
@@ -236,7 +243,7 @@ class Coll
         }, null, $coll);
     }
 
-    static $map = 'phojure\\Coll::map';
+    static $map = self::class . '::map';
 
     static function map($f, $coll)
     {
@@ -248,7 +255,7 @@ class Coll
         });
     }
 
-    static $filter = 'phojure\\Coll::filter';
+    static $filter = self::class . '::filter';
 
     static function filter($pred, $coll)
     {
@@ -263,7 +270,7 @@ class Coll
         });
     }
 
-    static $keep = 'phojure\\Coll::keep';
+    static $keep = self::class . '::keep';
 
     static function keep($f, $coll)
     {
@@ -278,7 +285,7 @@ class Coll
         });
     }
 
-    static $take = 'phojure\\Coll::take';
+    static $take = self::class . '::take';
 
     static function take($n, $coll)
     {
@@ -293,7 +300,7 @@ class Coll
         });
     }
 
-    static $drop = 'phojure\\Coll::drop';
+    static $drop = self::class . '::drop';
 
     static function drop($n, $coll)
     {
@@ -308,7 +315,7 @@ class Coll
         });
     }
 
-    static $repeat = 'phojure\\Coll::repeat';
+    static $repeat = self::class . '::repeat';
 
     static function repeat($x)
     {
@@ -320,14 +327,14 @@ class Coll
         });
     }
 
-    static $repeatn = 'phojure\\Coll::repeatn';
+    static $repeatn = self::class . '::repeatn';
 
     static function repeatn($n, $x)
     {
         return self::take($n, self::repeat($x));
     }
 
-    static $rangeBy = 'phojure\\Coll::rangeBy';
+    static $rangeBy = self::class . '::rangeBy';
 
     static function rangeBy($start, $end, $step)
     {
@@ -339,7 +346,7 @@ class Coll
             );
         });
     }
-    static $range = 'phojure\\Coll::range';
+    static $range = self::class . '::range';
 
     static function range($start, $end)
     {
@@ -347,7 +354,7 @@ class Coll
     }
 
 
-    static $every = 'phojure\\Coll::every';
+    static $every = self::class . '::every';
 
     static function every($pred, $coll)
     {
@@ -360,7 +367,7 @@ class Coll
         return true;
     }
 
-    static $arr = 'phojure\\Coll::arr';
+    static $arr = self::class . '::arr';
 
     static function arr($coll)
     {
@@ -375,7 +382,7 @@ class Coll
         return $ret;
     }
 
-    static $vec = 'phojure\\Coll::vec';
+    static $vec = self::class . '::vec';
 
     static function vec($coll)
     {
@@ -386,7 +393,7 @@ class Coll
         return LazilyPersistentVector::create($coll);
     }
 
-    static $vector = 'phojure\\Coll::vector';
+    static $vector = self::class . '::vector';
 
     static function vector(... $xs)
     {

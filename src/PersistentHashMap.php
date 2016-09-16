@@ -1240,6 +1240,19 @@ class TransientHashMap extends ATransientMap
         }
     }
 
+    function containsKey($key)
+    {
+        if($key === null){
+            return $this->hasNull;
+        }
+        elseif ($this->root) {
+            $notFound = new EmptyBox();
+
+            return $notFound !== $this->root->find(0, Val::hash($key), $key, $notFound);
+        }
+        return false;
+    }
+
     function doAssoc($key, $val)
     {
         if($key === null){

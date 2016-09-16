@@ -16,10 +16,10 @@ class ThreadLast implements IDeref
         $this->val = $val;
     }
 
-    function pipe($name, ... $arguments)
+    function _($f, ... $arguments)
     {
         array_push($arguments, $this->val);
-        return new ThreadLast(call_user_func_array($name, $arguments));
+        return new ThreadLast(call_user_func_array($f, $arguments));
     }
 
     function deref()

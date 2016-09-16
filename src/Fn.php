@@ -7,26 +7,26 @@ namespace phojure;
 class Fn
 {
 
-    static $call = 'phojure\\Fn::call';
+    static $call = self::class . '::call';
 
     static function call($f, ... $args)
     {
         return call_user_func_array($f, $args);
     }
 
-    static $apply = 'phojure\\Fn::apply';
+    static $apply = self::class . '::apply';
 
     static function apply($f, ... $args)
     {
-        $c = count($args);
-        if ($c == 0) {
+        if (empty($args)) {
             return call_user_func($f);
         }
-        $last = array_pop($args);
-        return new ThreadFirst(call_user_func_array($f, $args + $last));
+
+        $l = array_pop($args);
+        return call_user_func_array($f, array_merge($args, $l));
     }
 
-    static $key = 'phojure\\Fn::key';
+    static $key = self::class . '::key';
 
     static function key($k)
     {
@@ -35,7 +35,7 @@ class Fn
         };
     }
 
-    static $juxt = 'phojure\\Fn::juxt';
+    static $juxt = self::class . '::juxt';
 
     static function juxt(... $fs)
     {

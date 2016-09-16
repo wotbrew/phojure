@@ -31,8 +31,8 @@ class VectorTest extends \PHPUnit_Framework_TestCase
     function testAssoc()
     {
         $arr = Val::threadl('foo')
-                    ->pipe(Coll::$repeatn, 100)
-                    ->pipe(Coll::$arr)
+                    ->_(Coll::$repeatn, 100)
+                    ->_(Coll::$arr)
                     ->deref();
         
         $vec = Coll::vec($arr);

@@ -690,4 +690,9 @@ class TransientVector implements ITransientVector
     {
         throw new \Exception();
     }
+
+    public function containsKey($key)
+    {
+        return $key < $this->count();
+    }
 }
