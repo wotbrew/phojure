@@ -77,5 +77,35 @@ class MapTest extends \PHPUnit_Framework_TestCase
             ->_(Map::$getIn, [[1, 2], "hello", "tester"])
             ->deref()
         );
+
+        $this->assertTrue(
+            Val::eq(
+                Map::assoc($m, [1, 2], [], 'foo', 'qux'),
+                Map::of(
+                    'foo', 'qux',
+                    'baz', 'wut',
+                    [1, 2], [])
+            )
+        );
+
+        $this->assertTrue(
+            Val::eq(
+                $m[[1, 2]],
+                Map::of(
+                'hello', Map::of('world', true)
+                )
+            )
+        );
+
+        $r = Coll::range(0, 17);
+        $m = Coll::zipmap(Coll::range(0, 17), Coll::repeat("foo"));
+        $ks = Coll::vec(Map::keys($m));
+
+        $this->assertTrue(
+            Val::eq(
+                $r,
+                Coll::sort($ks)
+            )
+        );
     }
 }

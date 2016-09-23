@@ -267,7 +267,7 @@ class PersistentArrayMap extends APersistentMap implements IEditableCollection, 
         return self::ofSeqArray($newArray);
     }
 
-    function without($key)
+    function dissoc($key)
     {
         $i = $this->indexOf($key);
         if ($i >= 0) //have key, will remove

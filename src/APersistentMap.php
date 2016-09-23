@@ -45,7 +45,8 @@ abstract class APersistentMap implements IPersistentMap, IHashEq, \ArrayAccess
     {
         if ($o instanceof MapEntry) {
             return $this->assoc($o->key(), $o->val());
-        } elseif ($o instanceof IPersistentVector) {
+        }
+        elseif ($o instanceof IPersistentVector) {
             if (count($o) != 2)
                 throw new \Exception("Vector arg to map conj must be a pair");
             return $this->assoc($o->nth(0), $o->nth(1));

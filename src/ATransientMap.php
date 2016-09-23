@@ -53,7 +53,7 @@ abstract class ATransientMap implements ITransientMap
         return $this->doAssoc($key, $val);
     }
     
-    function without($key)
+    function dissoc($key)
     {
         $this->ensureEditable();
         return $this->doWithout($key);
@@ -95,7 +95,7 @@ abstract class ATransientMap implements ITransientMap
 
     public function offsetUnset($offset)
     {
-        return $this->without($offset);
+        return $this->dissoc($offset);
     }
 
 }

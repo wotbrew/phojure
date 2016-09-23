@@ -64,7 +64,7 @@ class Val
         }
         if(is_float($o)) return Murmur3::hashInt($o);
         if(is_double($o)) return Murmur3::hashInt($o);
-        if($o instanceof \SplFixedArray) return Murmur3::hashOrdered($o);
+        if($o instanceof \Traversable) return Murmur3::hashOrdered($o);
 
         if(is_object($o))
             return self::_hash(spl_object_hash($o));

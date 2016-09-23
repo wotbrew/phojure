@@ -21,8 +21,16 @@ class Coll
 
     static $conj = self::class . '::conj';
 
-    static function conj($coll, $x)
+    static function conj($coll, $x, ... $xs)
     {
+        if($xs){
+            $coll = self::conj($coll, $x);
+            foreach($xs as $x){
+                $coll = $coll->cons($x);
+            }
+            return $coll;
+        }
+
         if ($coll == null)
             return new PersistentList($x, null);
 
@@ -247,8 +255,11 @@ class Coll
 
     static function map($f, $coll)
     {
+        $coll = self::seq($coll);
+
         if (!$coll) return null;
         return new UncachedLazySeq(function () use ($f, $coll) {
+
             return self::cons(
                 call_user_func($f, self::first($coll)),
                 self::map($f, self::rest($coll)));
@@ -259,6 +270,7 @@ class Coll
 
     static function filter($pred, $coll)
     {
+        $coll = self::seq($coll);
         if(!$coll) return null;
         return new UncachedLazySeq(function () use($pred, $coll) {
             if (call_user_func($pred, $coll)) {
@@ -424,6 +436,39 @@ class Coll
     static function transient($coll)
     {
         return $coll->asTransient();
+    }
+
+    static $zipmap = self::class . "::zipmap";
+
+    static function zipmap($keys, $vals)
+    {
+        $m = Map::getEmpty()->asTransient();
+        $ks = Coll::seq($keys);
+        $vs = Coll::seq($vals);
+        while($ks && $vs){
+            $m = $m->assoc($ks->first(), $vs->first());
+            $ks = self::next($ks);
+            $vs = self::next($vs);
+        }
+        return $m->persistent();
+    }
+
+
+    static $sort = self::class . '::sort';
+    static function sort($coll, $cmp = null)
+    {
+        $arr = self::arr($coll);
+        usort($arr, $cmp ?: function ($a, $b) { return Val::compare($a, $b); });
+        return Coll::seq($arr);
+    }
+
+    static $sortBy = self::class . '::sortBy';
+    static function sortBy($f, $coll, $cmp = null)
+    {
+        $cmp = $cmp ?: function ($a, $b) { return Val::compare($a, $b) ;};
+        return self::sort($coll, function($a, $b) use ($f, $cmp) {
+            return $cmp(call_user_func($f, $a), call_user_func($f, $b));
+        });
     }
 
 }

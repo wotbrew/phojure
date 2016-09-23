@@ -152,7 +152,7 @@ class Map
         }
 
         if($m instanceof IPersistentMap){
-            return $m->without($k);
+            return $m->dissoc($k);
         }
         if(is_array($m)){
             if(array_key_exists($k, $m)){
@@ -198,6 +198,57 @@ class Map
             return self::assoc($m, $k, $v);
         }
         return $m;
+    }
+
+    static $keys = self::class . "::keys";
+
+    static function keys($m)
+    {
+        if($m === null){
+            return null;
+        }
+
+        if($m instanceof IPersistentMap){
+            return Coll::map(
+                function($entry){
+                  return $entry->key();
+                },
+                $m->seq()
+            );
+        }
+
+        if(is_array($m)){
+            return Coll::seq(array_keys($m));
+        }
+    }
+
+    static $vals = self::class . "::vals";
+
+    static function vals($m)
+    {
+        if($m === null){
+            return null;
+        }
+
+        if($m instanceof IPersistentMap){
+            return Coll::map(
+                function($entry){
+                    return $entry->val();
+                },
+                $m->seq()
+            );
+        }
+
+        if(is_array($m)){
+            return Coll::seq(array_values($m));
+        }
+    }
+
+    static $getEmpty = self::class .'::getEmpty';
+
+    static function getEmpty()
+    {
+        return PersistentArrayMap::getEmpty();
     }
 
     static $of = self::class . '::of';
